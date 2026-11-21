@@ -42,7 +42,7 @@ minimizing the trusted computing base — to every component.
 ## Source layout
 
 ```
-public/
+./
 ├── main.typ                 # root document; include order = chapter order
 ├── introduction/            # one main.typ per chapter
 ├── foundations/
@@ -58,11 +58,9 @@ public/
 ├── grc/
 ├── automation/              # currently excluded from the build
 └── secure_architecture.pdf  # generated snapshot
-../compile.sh                # build script (run from this directory)
 ```
 
-The document source lives in this `public/` directory. Everything above it is
-scratch material: references, notes, drafts, and older exports.
+`main.typ` is the root document, and the chapter directories are its includes.
 
 ## Building
 
@@ -70,20 +68,10 @@ Requirements:
 
 - [Typst](https://typst.app/) CLI (tested with 0.15.x). HTML export currently
   requires a build with the `html` feature enabled.
-- [Pandoc](https://pandoc.org/) for the optional Markdown export; `compile.sh`
-  invokes it through `nix run nixpkgs#pandoc`, so Nix is needed for that step.
 - Network access on first build if the `@preview` packages (`tablem`,
   `fletcher`) are not already in the Typst package cache.
 
 From this directory:
-
-```sh
-../compile.sh
-```
-
-That script produces `secure_architecture.pdf`, an experimental HTML export,
-and a Markdown conversion of the HTML in the current directory. To build just
-the PDF, or to skip Pandoc:
 
 ```sh
 typst compile main.typ secure_architecture.pdf
