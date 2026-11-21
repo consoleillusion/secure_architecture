@@ -1,0 +1,319 @@
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
+
+#set page(
+  paper: "us-trade",
+  margin: (x: 2cm, y: 2cm),
+)
+#set text(black, font: "New Computer Modern")
+
+=== Layer 1 - Physical Layer
+*Cables, connectors, topologies, signals*
+
+The Physical Layer is the foundation of the OSI model. It is responsible for the transmission of raw bits over a physical medium, whether that is copper wire, fiber optic cable, or radio waves. It does not understand what the data means; it simply moves ones and zeros from one point to another. This is distinct from the unoficial layer 0. Whereas layer 0 describes the background propogation of electricity and waves in the material itself, layer 1 translates this into signal that is interpreted as information. To do this job, Layer 1 is divided into three sublayers, each handling a distinct part of the process.
+
+- PMD, PMA, PCS sublayers
+- Line encoding schemes (NRZ, PAM-4, 8b/10b, 64b/66b) and why they matter
+- Cable selection (copper vs. fiber) and EM eavesdropping surface
+
+==== The Three Sublayers and How They Interact
+
+#set text(white, font: "New Computer Modern")
+#let colors = (gray, olive, green, teal, gray)
+
+#diagram(
+	edge-stroke: 1pt,
+	node-corner-radius: 5pt,
+	edge-corner-radius: 8pt,
+	mark-scale: 80%,
+
+	node((0,0) , [Physical Medium(copper, fiber, air)], fill: colors.at(0), shape: fletcher.shapes.rect),
+	node((0,+1), [PMD (Physical Medium Dependence)]   , fill: colors.at(1), shape: fletcher.shapes.rect),
+	node((0,+2), [PMA (Physical Medium Attachment)]   , fill: colors.at(2), shape: fletcher.shapes.rect),
+	node((0,+3), [PCS (Physical Coding Sublayer)]     , fill: colors.at(3), shape: fletcher.shapes.rect),
+	node((0,+4), [Layer 2 (Data Link Layer)]          , fill: colors.at(4), shape: fletcher.shapes.rect),
+
+	edge((0,0), "d", "<{-}>"),
+	edge((0,+1), "d", "<{-}>"),
+	edge((0,+2), "d", "<{-}>"),
+	edge((0,+3), "d", "<{-}>"),
+
+ 	{
+		let tint(c) = (stroke: c, fill: rgb(..c.components().slice(0,3), 30%), inset: 16pt)
+		node(enclose: ((0,1), (1,3)), ..tint(green), name: <wide>)
+	},
+
+)
+
+#set text(black, font: "New Computer Modern")
+
+Data flowing from Layer 2 passes through PCS (encoding) → PMA (serialization) → PMD (signal transmission onto the medium). Signal coming from the physical medium reverses this: PMD receives the signal → PMA deserializes it → PCS decodes it back into a clean bitstream for Layer 2.
+
+The three sublayers allow the standard to be modular. A new physical medium (e.g. a new fiber type) only requires changes at the PMD level, the PCS and PMA layers above it remain the same.
+
+===== PMD, Physical Medium Dependence
+
+The PMD is the lowest sublayer and the one closest to the actual physical medium. It handles everything that is specific to the medium itself: generating the signal, amplifying it, and shaping it for transmission. On copper, this means driving voltages. On fiber, it means driving LEDs or lasers. On wireless, Lifi, Free Space Optics, it means generating the radio frequency wave. The PMD is what changes when you change the medium, the sublayers above it (PMA and PCS) can remain the same.
+
+#table(
+  columns: (auto, auto, auto, auto),
+  align: center + horizon,
+  stroke: none,
+  table.header(
+    [*Common Name*]   , [*Standard (Official)*]           , [*Medium*], [*Frequency (Carrier)*]
+  ),
+  [4G LTE]            , [3GPP LTE]                        , [Air], [~700 MHz → 2.6 GHz],
+  [5G (sub-6)]        , [3GPP 5G NR (FR1)]                , [Air], [~600 MHz → 6 GHz],
+  [5G (mmWave)]       , [3GPP 5G NR (FR2)]                , [Air], [~24 GHz → 40 GHz],
+  [Satellite Internet], [DVB-S2 / DVB-S2X]                , [Air], [~1 GHz → 40 GHz],
+  [Wi-Fi 4]           , [IEEE 802.11n]                    , [Air], [~2.4 / 5 GHz],
+  [Wi-Fi 5]           , [IEEE 802.11ac]                   , [Air], [~5 GHz],
+  [Wi-Fi 6]           , [IEEE 802.11ax]                   , [Air], [~2.4 / 5 GHz],
+  [Wi-Fi 6E]          , [IEEE 802.11ax (6 GHz)]           , [Air], [~6 GHz],
+  [Wi-Fi 7]           , [IEEE 802.11be], [Air]            , [~2.4 / 5 / 6 GHz],
+  [LiFi]              , [IEEE 802.11bb], [Air]            , [~400 THz → 800 THz],
+  [Free Space Optics] , [No Standard], [Air]              , [~190 THz → 400 THz],
+  [Fiber Optics]      , [IEEE 802.3 (100G/400G Ethernet)] , [Glass], [~190 THz → 230 THz],
+)
+
+===== EM, Air - Cellular and Satellite Internet
+
+These are alternative physical media for connecting to the internet when traditional wired infrastructure is unavailable or impractical.
+
+*Cellular networks* divide geographic areas into cells, each served by a tower that handles radio transmission and reception for devices within its area. As a device moves between cells, it hands off seamlessly between towers. The underlying radio technology has evolved through generations: 2G introduced digital voice and basic data, 3G brought mobile broadband, 4G LTE dramatically increased speeds to tens or hundreds of Mbps, and 5G pushes into the Gbps range using higher frequency bands (including millimeter wave) and denser tower deployments. At the PMD level, each generation uses different radio frequencies and modulation techniques.
+
+*Satellite internet* transmits data from a dish at the customer's location up to an orbiting satellite, which relays it to a ground station connected to the internet backbone, and returns data the same way. Traditional geostationary satellites sit at 35,000km altitude, introducing significant latency (500–700ms round trip) due to the signal travel time. Low Earth Orbit (LEO) constellations like Starlink orbit at around 550km, reducing latency to 20–40ms and making satellite internet practical for real-time applications. Satellite internet is primarily used in remote or undeveloped areas where no other infrastructure exists.
+
+===== EM, Air - Wi-Fi Frequency Bands and Channels
+
+The radio frequencies used by Wi-Fi are a PMD concern, they define the physical medium through which wireless data travels.
+
+*2.4 GHz* has the longest range of the three bands because lower frequencies propagate further and penetrate obstacles better. However it is heavily congested, shared with microwave ovens, baby monitors, Bluetooth, and many other devices. It has 11 channels in most regions, of which only 3 are non-overlapping (channels 1, 6, and 11). It is also the slowest of the three bands.
+
+*5 GHz* is faster than 2.4GHz and far less congested, offering many more non-overlapping channels and significantly less interference. The tradeoff is reduced range, higher frequencies attenuate more quickly over distance and have more difficulty penetrating walls.
+
+*6 GHz* is the newest band, introduced with Wi-Fi 6E. It offers the highest speeds and the least interference of the three, since it is exclusively used by Wi-Fi (no legacy devices share it yet). Range is the shortest of the three bands.
+
+*Channels* subdivide each band into smaller fr  equency ranges. Wider channels (80MHz or 160MHz) allow more data per transmission but are more susceptible to interference and leave less room for other networks. Narrower channels (20MHz) are more resilient but slower. Selecting non-overlapping channels for neighboring APs is essential to prevent them from degrading each other's performance.
+
+===== EM, Air - LiFi
+
+===== EM, Air - Free Space Optics
+
+Free-space optics (FSO) passes signal through air using is a communication method that transmits data using light, which . Typically implemented with lasers or LEDs, FSO systems encode data onto optical beams and require precise line-of-sight alignment between transmitter and receiver. They can deliver extremely high bandwidth with low latency and are immune to electromagnetic interference, making them attractive for applications such as inter-building links, satellite communications, and deep-space networks. However, their performance is highly sensitive to environmental conditions—fog, rain, dust, and atmospheric turbulence can significantly attenuate or distort the signal—so reliability often depends on adaptive optics, redundancy, or hybrid integration with radio-frequency systems.
+
+===== EM, Glass - Fiber Optic Cables
+
+Fiber optic cable transmits data as pulses of light rather than electrical signals, which gives it two significant advantages over copper: it is immune to electromagnetic interference and it can span far greater distances without signal degradation. The core of the cable is a strand of extremely pure glass or plastic that carries the light, surrounded by cladding with a different refractive index that reflects the light back into the core (total internal reflection), keeping it on course.
+
+*Single-mode fiber (SMF)* has a very narrow core (around 9 microns) that allows only a single path of light. Because the light travels in a straight line without bouncing off the walls, it can travel tens or even hundreds of kilometres with minimal loss. Used for long-distance runs between buildings, campuses, and across cities.
+
+*Multi-mode fiber (MMF)* has a wider core (50 or 62.5 microns) that allows multiple paths of light to travel simultaneously. The different paths arrive at slightly different times (modal dispersion), which limits the distance before the signal degrades, typically 300–550 metres depending on the standard. However, multi-mode fiber is cheaper and works with less expensive LED-based transceivers, making it cost-effective for shorter runs within buildings and data centers.
+
+===== Copper - Twisted Pair Cables (UTP/STP)
+
+Twisted pair is the dominant physical medium for wired local area networks. Cables contain four pairs of copper wires, with each pair twisted around each other. The twisting is deliberate, it causes electromagnetic interference picked up by both wires in a pair to cancel out (common mode rejection), dramatically reducing crosstalk between adjacent pairs and interference from external sources.
+
+*UTP (Unshielded Twisted Pair)* relies entirely on the twisting for noise rejection. It is cheaper, lighter, and more flexible, making it the standard choice for offices and homes.
+
+*STP (Shielded Twisted Pair)* adds a metallic foil shield around each pair or around the entire cable bundle, providing an additional layer of protection against electromagnetic interference. Used in industrial environments or anywhere with significant electrical noise.
+
+Cable categories define the tightness of the twists and the resulting performance:
+
+#table(
+  columns: (auto, auto, auto),
+  align: left,
+  table.header(
+    [*Category*], [*Max Speed*], [*Notes*]
+  ),
+  [Cat 3], [10 Mbps], [Obsolete, used for phone wiring],
+  [Cat 5], [100 Mbps], [Largely obsolete],
+  [Cat 5e], [1 Gbps], [Minimum for modern networks],
+  [Cat 6], [1 Gbps (10G up to 55m)], [Tighter twists, better crosstalk rejection],
+  [Cat 6A], [10 Gbps], [Augmented, up to 100m],
+  [Cat 7], [10 Gbps], [STP, backwards compatible],
+  [Cat 8], [40 Gbps], [STP, up to 30m, for data centers],
+)
+
+Tighter twists mean better noise rejection but also mean more copper per metre of cable, which is why higher categories cost more.
+
+===== Copper - Coaxial Cable
+
+Coaxial cable consists of a central copper conductor surrounded by insulating material, a metallic mesh shield, and an outer jacket. The shield provides excellent protection against electromagnetic interference, which is why coax was used as the original Ethernet backbone medium and is still used by cable TV and broadband providers for the last-mile connection into homes. The two common types are RG6 (designed for long distances, used for cable TV and broadband internet) and RG59 (designed for short distances, used for high-definition video signals such as CCTV). Coax's bandwidth is also used for DOCSIS (Data Over Cable Service Interface Specification), which is the protocol that allows cable TV infrastructure to carry broadband internet.
+
+====== Plenum Cables
+
+Plenum cables are a safety classification rather than a performance one, and they are a PMD-level concern because they address the physical properties of the cable's jacket material. Plenum spaces are the voids in buildings used for HVAC air circulation, typically the gap between a suspended ceiling and the structural floor above. Because air circulates freely through these spaces, any cable running through them must meet strict fire safety requirements: the jacket must be more fire-resistant than standard cable and must not emit toxic fumes if it does catch fire, since those fumes would be distributed throughout the building by the HVAC system. Non-plenum (riser or CMR) cables use cheaper PVC jackets that are adequate where air is contained within ducts and cannot freely circulate.
+
+==== PMA, Physical Medium Attachment
+
+The PMA sits between the PCS above it and the PMD below it. Its primary job is to convert data between the parallel format used internally by the device and the serial format required for transmission over a single cable or wireless channel. Internally, network devices process multiple bits simultaneously in parallel paths for speed. But physical mediums transmit bits one at a time in a serial stream. The PMA performs this serialization on the transmit side and deserialization on the receive side (sometimes called SerDes, Serializer/Deserializer).
+
+The PMA also handles clock recovery on the receive path, extracting the timing signal from the incoming bit stream so that the receiver can correctly sample each bit. It compensates for minor timing differences between the transmitter and receiver clocks.
+
+===== Wireless Access Points and Antennas
+
+Wireless access points (APs) are the attachment point between a wired network and wireless clients, and their antenna systems operate at the PMA level. The antenna is the component that converts the electrical signal into a radio wave and back again, the physical attachment to the wireless medium.
+
+*Omnidirectional antennas* radiate signal equally in all directions (in a donut-shaped pattern around the antenna). These are the most common type, found in home routers and office APs, because they serve clients in any direction without needing to be aimed.
+
+*Directional antennas* focus the signal in a specific direction, increasing range and signal strength in that direction at the expense of coverage in others. Used in point-to-point wireless links between buildings, or to extend coverage down a long corridor.
+
+The distinction between *lightweight and autonomous APs* also relates to the PMA level. Autonomous APs handle all their own signal management and configuration locally. Lightweight APs offload management to a central Wireless LAN Controller (WLC), which coordinates channel selection, power levels, and roaming across all APs in the network, ensuring that each AP's physical attachment settings are optimised as a system rather than independently.
+
+===== DAC (Direct Attach Copper)
+
+Direct Attach Copper cables are a PMA-level component. They come pre-terminated with SFP (Small Form-factor Pluggable) transceivers at each end, which are the physical attachment point between the cable and the device's network port. The transceiver handles the parallel-to-serial conversion internally, making DAC cables effectively a complete PMA solution in a single cable assembly. They are used for short-distance, high-speed connections inside data centers, typically between switches on the same or adjacent racks, because they offer lower latency and lower cost than optical transceivers for distances up to about 7 metres.
+
+===== Cable Connectors
+
+Connectors are the physical attachment points, the interface between the cable and the device, making them PMA components.
+
+- *RJ45*, the standard 8-pin connector for twisted pair Ethernet cable. One end plugs into the device's network interface card, the other into a switch, router, or patch panel. A locking tab holds it in place.
+- *RJ11*, a smaller 4-wire connector used for telephone lines and DSL connections.
+- *F-type*, a threaded coaxial connector used by cable TV and broadband providers. Screws onto the back of a cable modem.
+- *BNC (Bayonet Neill–Concelman)*, a bayonet-style coaxial connector used for analog and digital video and some older network equipment.
+- *SC (Standard Connector)*, a push-pull fiber optic connector, one of the first widely adopted fiber connectors. Commonly used between floors in a building.
+- *LC (Lucent Connector)*, a smaller fiber optic connector using a latch mechanism similar to RJ45. About half the size of SC, making it better for high-density patch panels. Now the most common fiber connector in data centers.
+- *MPO (Multi-fiber Push-On)*, combines multiple fiber strands into a single connector for very high-density, high-speed applications.
+- *ST (Straight Tip)*, a bayonet-locking fiber connector developed by AT&T. Largely superseded by LC and SC due to its larger size.
+
+
+==== PCS, Physical Coding Sublayer
+
+The PCS sits closest to Layer 2. Its job is to take the raw bitstream coming from the data link layer and encode it into a form that can travel reliably over the medium. On the receive side, it decodes the incoming signal back into a clean bitstream. The PCS is also responsible for synchronization, ensuring the receiver knows where each bit starts and ends, and for error detection at the physical level.
+
+===== Line Encoding Schemes
+
+Line encoding is the method used to represent binary data as electrical or optical signals on a medium. Different schemes make different tradeoffs between bandwidth efficiency, clock recovery, and immunity to noise.
+
+*RZ (Return to Zero)*
+In RZ encoding, the signal returns to zero between every bit. A 1 is represented by a high pulse that drops back to zero before the next bit, and a 0 is represented by no pulse. This makes clock recovery easy since there is always a transition, but it is bandwidth-inefficient because the return-to-zero transition consumes half the bit period.
+
+*NRZ (Non-Return to Zero Level)*
+NRZ does not return to zero between bits. A 1 holds the signal high and a 0 holds it low for the entire bit period. This is simple and efficient but suffers from baseline wander, long runs of the same bit cause the signal to drift, making it hard for the receiver to recover the clock. Used in early serial communications.
+
+*NRZI (Non-Return to Zero Inverted)*
+Rather than encoding 1s and 0s as fixed voltage levels, NRZI encodes a 1 as a transition (either high-to-low or low-to-high) and a 0 as no transition. This improves clock recovery because a long string of 1s produces regular transitions, but long runs of 0s remain problematic. Used in USB and some fiber standards.
+
+*Manchester Encoding*
+Manchester guarantees a transition in the middle of every bit period, a low-to-high transition represents a 1, and a high-to-low transition represents a 0 (or vice versa depending on the standard). This makes clock recovery very reliable since there is always a mid-bit transition. The tradeoff is that it requires twice the bandwidth of NRZ. Used in classic 10BaseT Ethernet.
+
+*Miller Encoding (Delay Modulation)*
+Miller encoding places a transition in the middle of a bit period only for 1s (like Manchester), but for 0s it only transitions at the boundary if the next bit is also a 0. This halves the number of transitions compared to Manchester, conserving bandwidth while still maintaining adequate clock recovery. Used in magnetic storage and some RFID systems.
+
+*Biphase-M*
+A variant of biphase encoding where there is always a transition at the start of each bit period, and an additional transition in the middle for a 1. This guarantees at least one transition per bit, making it self-clocking and resistant to DC drift. Used in some telemetry and timing applications.
+
+*PAM2-NRZ (Pulse Amplitude Modulation 2-level)*
+PAM2 is essentially NRZ, two amplitude levels represent 0 and 1. It is the baseline for understanding PAM4 and is the encoding used in most traditional Ethernet up to 10GbE.
+
+*PAM4 (Pulse Amplitude Modulation 4-level)*
+PAM4 uses four distinct voltage levels (0, 1, 2, 3) instead of two, encoding 2 bits per symbol rather than 1. This doubles the data throughput for a given signal frequency, which is why PAM4 is used in 25GbE, 50GbE, 100GbE and above. The tradeoff is reduced noise margin, the four levels are closer together, making it more sensitive to interference, which requires more sophisticated error correction.
+
+, 
+
+===== Ethernet Standards (802.3)
+
+The IEEE 802.3 standard governs wired Ethernet and sits at the PCS level because it defines how data is encoded and framed for transmission. Ethernet cables are named using a consistent convention that describes their speed, transmission type, and medium. For example, 10BaseT means 10Mbps, baseband transmission, over twisted pair cable. Baseband means the entire cable bandwidth is used for a single signal, as opposed to broadband which divides the bandwidth into multiple channels.
+
+Ethernet speeds have grown dramatically over the decades, from the original 10Mbps through 100Mbps (Fast Ethernet), 1Gbps (Gigabit Ethernet), 10Gbps, 25Gbps, 40Gbps and beyond. Each speed tier typically introduces a new line encoding scheme, for instance, the jump to 25GbE and above uses PAM4 instead of NRZ precisely because the signal frequency would otherwise be too high for copper to handle reliably.
+
+===== Wireless Standards (802.11)
+
+The IEEE 802.11 family of standards defines Wi-Fi, and like 802.3 these standards operate at the PCS level, governing how data is encoded and modulated for wireless transmission. Each generation of 802.11 has introduced faster encoding and modulation techniques, allowing more data to be packed into each transmission:
+
+- *802.11 (1997)*, original standard, 2Mbps max
+- *802.11b (1999)*, 11Mbps, 2.4GHz
+- *802.11a (1999)*, 54Mbps, 5GHz
+- *802.11g (2003)*, 54Mbps, 2.4GHz
+- *802.11n (2009)*, up to 600Mbps, introduced MIMO (multiple antennas)
+- *802.11ac (2013)*, up to several Gbps, 5GHz, wider channels
+- *802.11ax (Wi-Fi 6, 2019)*, improved efficiency in dense environments, 2.4 and 5GHz
+- *802.11be (Wi-Fi 7, 2024)*, up to 46Gbps, adds 6GHz, 320MHz channels
+
+Each generation encodes data more densely using higher-order modulation (e.g. moving from QAM-64 to QAM-4096), which increases throughput but requires a cleaner, stronger signal.
+
+===== 802.11h Standard
+
+802.11h is a specific amendment to the 802.11 standard designed for the 5GHz band, primarily to meet European regulatory requirements. It adds two important mechanisms that operate at the PCS/PMD boundary. Dynamic Frequency Selection (DFS) detects radar systems operating in the same 5GHz frequencies and automatically switches the wireless network to a different channel to avoid interference, the device must vacate the channel and wait a set period before reusing it. Transmit Power Control (TPC) caps the maximum transmission power of wireless devices, reducing interference with other systems sharing the same frequencies. Both features are now used globally, not just in Europe.
+
+===== Band Steering
+
+Band steering is a feature implemented in dual-band and tri-band Wi-Fi routers and access points. When a client device supports multiple frequency bands, the AP can nudge it toward the 5GHz or 6GHz band rather than letting it default to the congested 2.4GHz band. This happens at the PCS level because it is a decision about which encoding and channel configuration to use for a given client. The AP checks the client's capabilities and if it supports the faster band, it withholds the 2.4GHz beacon or de-prioritises it so the client associates with the better band automatically.
+
+===== Generic Level 1
+
+===== Network Topologies
+
+Network topology describes how devices are physically connected and how data flows between them. Topology is a Layer 1 concern because it defines the physical layout of the medium.
+
+*Star topology* is the dominant topology in modern wired LANs. All devices connect to a central switch or hub using their own dedicated cable. The central device manages all communication. The major advantage is fault isolation, if one cable or device fails, only that device is affected. The weakness is that the central switch is a single point of failure for the whole network.
+
+*Mesh topology* connects every device directly to every other device. This creates maximum redundancy, if any single link fails, data can route around it. The internet itself is the largest example of a mesh topology, with routers worldwide interconnected so that data can always find an alternative path. The downside is cost and complexity: the number of connections grows exponentially as devices are added.
+
+*Point-to-point topology* is the simplest possible configuration, a single cable or link directly connecting two devices. The building block of more complex topologies.
+
+*Spine-leaf topology* is designed specifically for data centers. It consists of two layers: spine switches (the backbone, fully interconnected with each other) and leaf switches (connected to every spine switch but not to each other). Every server connects to a leaf switch. Because any leaf can reach any other leaf through exactly one spine switch, traffic always takes a maximum of two hops, keeping latency consistent and predictable regardless of where in the data center the source and destination are. This predictability is critical for large-scale cloud and virtualisation workloads.
+
+*Collapsed core* is a simplified version of Cisco's three-tier model (core, distribution, access) designed for smaller networks. Instead of separate core and distribution layers, these two are combined into a single layer, reducing hardware cost while preserving the structure needed for manageable growth.
+
+*Hybrid topology* combines two or more topology types to meet the specific needs of an organisation. For example, a star topology within each office floor, connected to other floors via a mesh of links.
+
+===== Server Racks
+
+Server racks are the physical infrastructure that houses and organises the networking and computing equipment in a data center or network room. They are standardised at 19 inches wide by the EIA-310 standard, allowing equipment from any manufacturer to fit the same rack. Height is measured in rack units (U), where 1U = 1.75 inches, so a 42U rack is 73.5 inches tall. Depth varies (typically 20–36 inches) depending on the equipment being housed.
+
+*Open racks* have no side panels or doors, providing excellent airflow and easy physical access to equipment. They are cheaper and work well in controlled data center environments.
+
+*Closed racks* (enclosed cabinets) have side panels, a front door, and a rear door. They provide better physical security and can help direct airflow through the equipment more precisely, but are more expensive and restrict access.
+
+A key responsibility for network administrators is planning rack layouts: which equipment goes where, how to run cables efficiently, and how to ensure adequate airflow between devices to prevent overheating. Hot aisle/cold aisle arrangements, where equipment exhausts heat into alternating hot aisles and draws cool air from cold aisles, are standard data center practice.
+
+==== Layer 1, Physical Layer
+*Cables, connectors, topologies, signals*
+
+===== Network Topologies
+The layout of how devices communicate. Star topology connects all devices to a central hub/switch, simple but has a single point of failure. Mesh connects every device to every other for high redundancy, used mainly in WANs. Point-to-point is the simplest: two devices directly connected. Hybrid topologies combine multiple types. Spine-leaf creates a full-mesh of two switch layers for low-latency data center networks. The three-tier hierarchical model (core, distribution, access) is Cisco's blueprint for large enterprise networks.
+
+- Spine-Leaf
+- Full Mesh
+- Collapsed Core
+
+===== Ethernet Standards (802.3)
+The IEEE 802.3 standard defines wired Ethernet. Cables are named by speed, transmission type, and media (e.g. 10BaseT = 10Mbps baseband over twisted pair). Speeds range from 10Mbps up to 40Gbps.
+
+===== Twisted Pair Cables (UTP/STP)
+The most common network cables. UTP (unshielded) is the standard for homes and businesses, using four color-coded twisted pairs to reduce interference. STP (shielded) adds foil protection for industrial use. Categories range from Cat3 (10Mbps) to Cat8 (40Gbps).
+
+===== Coaxial Cable
+Used by cable providers for broadband internet. RG6 handles long distances for TV/internet; RG59 is for short-distance high-definition video. Early networks used coax as their backbone.
+
+===== Fiber Optic Cables
+Uses pulses of light for very fast, long-distance data transfer. Single-mode fiber carries light at a single angle for extremely long distances. Multi-mode fiber carries light at multiple angles and is suited for shorter distances.
+
+===== Cable Connectors
+RJ45 (8-pin) is the standard Ethernet connector for twisted pair. RJ11 (4-wire) connects telephone equipment. F-type is a threaded connector for coaxial cables. BNC is used on coax for analog/digital video. Fiber connectors include SC (square/push-pull), LC (smaller, latch-lock), MPO (high-density multi-fiber), and ST (bayonet lock).
+
+===== DAC (Direct Attach Copper)
+Pre-terminated copper cables with SFP connectors used for short-distance, high-speed links inside data centers (e.g. between rack switches). Faster and lower latency than standard Ethernet, with no configuration needed.
+
+===== Plenum Cables
+Cables rated for installation in plenum spaces (open airflow areas above drop ceilings). Must be more fire-resistant and not emit toxic fumes if burned, since those fumes could circulate through HVAC systems.
+
+===== Wi-Fi Frequency Bands and Channels
+Wi-Fi operates on 2.4 GHz (longest range, most interference), 5 GHz (faster, less interference, shorter range), and 6 GHz (fastest, least interference, shortest range). Within each band, channels of varying widths (20–160 MHz) allow fine-tuning. Non-overlapping channels (e.g. 1, 6, 11 on 2.4 GHz) reduce interference between nearby networks.
+
+===== Wireless Standards (802.11)
+IEEE 802.11 defines Wi-Fi generations from the original 1997 standard through 802.11be (2024). Key improvements in each generation include higher maximum speeds and support for additional frequency bands.
+
+===== Cellular and Satellite Internet
+Cellular networks divide geography into cells, each served by a tower. Technologies evolved from 2G/3G to 4G LTE and 5G for dramatically higher speeds. Satellite internet (e.g. Starlink) transmits data via dish to orbiting satellites and back, used where no terrestrial infrastructure exists.
+
+===== Server Racks
+Standardized frames (19-inch wide) for mounting IT equipment. Height is measured in rack units (1U = 1.75 inches). Open racks provide better airflow and access; closed racks offer more physical security. Rack placement and airflow spacing are key responsibilities for network administrators.
+
+===== 802.11h Standard
+A wireless standard for the 5 GHz band (mainly in Europe) that adds Dynamic Frequency Selection (DFS) to detect and avoid radar systems, and Transmit Power Control (TPC) to limit signal power and reduce interference with other devices.
+
+
+#pagebreak()
