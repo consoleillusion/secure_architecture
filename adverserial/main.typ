@@ -4,13 +4,13 @@
 
 === Offensive methodology (awareness)
 - What a pentest is, what a pentest report looks like
-- Authorization, scoping, rules of engagement
+- Authorisation, scoping, rules of engagement
 - MITRE ATT&CK as a shared vocabulary for adversary behaviour
 - Asset discovery as defender visibility
 
 === What adversaries do, mapped to architectural answers
 - Reconnaissance → reduce attack surface
-- Exploitation → minimize TCB, default deny
+- Exploitation → minimise TCB, default deny
 - C2 and lateral movement → egress control, segmentation
 - Persistence → host attestation, immutability
 - Exfiltration → data classification and egress boundaries
@@ -526,7 +526,7 @@ the kill chain organises events along the campaign timeline, and the
 diamond organises features within an event for clustering and
 attribution.
 
-The chain is *course-grained* in what it calls a "phase" and gives
+The chain is *coarse-grained* in what it calls a "phase" and gives
 no vocabulary for the techniques an adversary uses within a phase.
 *MITRE ATT&CK*, formalised by Strom and colleagues, fills this gap
 with a taxonomy of tactics, the why of an action, mapped to

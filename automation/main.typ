@@ -4,7 +4,7 @@
 
 === Declarative configuration
 - NixOS as infrastructure substrate
-- Terraform / OpenTofu for cloud/virtualization resources
+- Terraform / OpenTofu for cloud/virtualisation resources
 - Ansible for imperative gap-filling (where unavoidable)
 - Comparison and boundary-drawing
 

@@ -4,7 +4,7 @@
 
 Layer 2 can move a frame between two interfaces that share a broadcast domain. That is all it can do. The moment a destination is on the other side of a router, Layer 2's addressing ceases to refer to anything useful: MAC addresses have no topology, no hierarchy, and no meaning outside the segment they were first observed on. A network that consists of more than one broadcast domain cannot be built out of Layer 2 alone, because Layer 2 has no mechanism for choosing between several possible paths when the destination is not a neighbour.
 
-Layer 3 introduces that mechanism. It does so by creating a new data unit, the *packet*, and a new kind of address, the *IP address*, whose purpose is not to identify a piece of hardware but to identify a logical location within a larger topology. Packets are forwarded, hop by hop, by devices called *routers*, each of which makes an independent decision about which of its interfaces should carry the packet onward. The internet — every continent, every datacenter, every home — exists because Layer 3 solved the problem of reaching a destination that is not directly connected.
+Layer 3 introduces that mechanism. It does so by creating a new data unit, the *packet*, and a new kind of address, the *IP address*, whose purpose is not to identify a piece of hardware but to identify a logical location within a larger topology. Packets are forwarded, hop by hop, by devices called *routers*, each of which makes an independent decision about which of its interfaces should carry the packet onward. The internet — every continent, every data centre, every home — exists because Layer 3 solved the problem of reaching a destination that is not directly connected.
 
 For a business of five to a hundred people, the whole of Layer 3 exists to answer three questions. What IP addresses do we use, and how are they allocated? How does a packet get from any one of our hosts to any other of our hosts or to the internet? And when a packet arrives somewhere, how do we know it is allowed to be there? The remainder of this chapter addresses each in turn, and then the harder question of what the architecture should do about the fact that the default answers to most of them are not safe.
 
@@ -12,7 +12,7 @@ For a business of five to a hundred people, the whole of Layer 3 exists to answe
 
 ===== The packet
 
-Every Layer 3 technology — IPv4 and IPv6 being the only two that matter outside specialized environments — defines a packet format. A header containing source and destination IP addresses, a handful of control fields, and a payload carrying the upper-layer PDU. The packet is the *PDU Transformation* that Layer 3 contributes to the dependency chain. IP takes a Layer 4 segment and wraps it into a packet so that it can be routed across an internetwork. Without this transformation there is no packet; without a packet, the Layer 2 frame has nothing to encapsulate, and the entire chain above collapses.
+Every Layer 3 technology — IPv4 and IPv6 being the only two that matter outside specialised environments — defines a packet format. A header containing source and destination IP addresses, a handful of control fields, and a payload carrying the upper-layer PDU. The packet is the *PDU Transformation* that Layer 3 contributes to the dependency chain. IP takes a Layer 4 segment and wraps it into a packet so that it can be routed across an internetwork. Without this transformation there is no packet; without a packet, the Layer 2 frame has nothing to encapsulate, and the entire chain above collapses.
 
 This is worth stating plainly because it governs every decision downstream. Any protocol that takes a segment and produces a packet, or a packet and produces a different packet, is on the critical path. Any protocol that assists this transformation without being it — translating addresses, exchanging routes, diagnosing failures — is not on the critical path in the same way, and the distinction matters when reasoning about what an attack on a given protocol can actually accomplish.
 
@@ -24,7 +24,7 @@ Hierarchy is also what makes subnetting an architectural tool rather than a book
 
 ===== The routing domain
 
-A router does not terminate a packet; it forwards it. The unit of Layer 3 scope, inherited from the routers' collective reach, is the *routing domain*: the set of networks between which packets can be forwarded without leaving a common administrative boundary. Within a routing domain, every host can in principle reach every other host; at the boundary, the domain exchanges reachability with other domains through some explicit mechanism, most commonly a default route toward an upstream provider. 
+A router does not terminate a packet; it forwards it. The unit of Layer 3 scope, inherited from the routers' collective reach, is the *routing domain*: the set of networks between which packets can be forwarded without leaving a common administrative boundary. Within a routing domain, every host can in principle reach every other host; at the boundary, the domain exchanges reachability with other domains through some explicit mechanism, most commonly a default route towards an upstream provider. 
 
 Where Layer 2's blast radius is the broadcast domain, Layer 3's blast radius is the routing domain plus everything the routing domain chooses to reach. That choice is made by the routing table and by the firewall policy sitting in front of it. The architecture of Layer 3 is, more than anything else, the architecture of those two things.
 
@@ -32,7 +32,7 @@ Where Layer 2's blast radius is the broadcast domain, Layer 3's blast radius is 
 
 ===== IPv4, and the exhaustion that shapes it
 
-IPv4 gives 32 bits of address space, approximately 4.3 billion addresses in theory and considerably fewer in practice once reserved ranges, broadcast addresses, and historical waste are accounted for. That space has been exhausted at the registry level for more than a decade. The practical consequence is that public IPv4 addresses are a scarce resource; an organization of a hundred people is unlikely to obtain more than one or two of them, and the internal network has to be built out of private address space.
+IPv4 gives 32 bits of address space, approximately 4.3 billion addresses in theory and considerably fewer in practice once reserved ranges, broadcast addresses, and historical waste are accounted for. That space has been exhausted at the registry level for more than a decade. The practical consequence is that public IPv4 addresses are a scarce resource; an organisation of a hundred people is unlikely to obtain more than one or two of them, and the internal network has to be built out of private address space.
 
 Private IPv4 space is defined by *RFC 1918*: `10.0.0.0/8`, `172.16.0.0/12`, and `192.168.0.0/16`. These ranges are not routable on the public internet; any router on the path to the internet will drop packets addressed to or from them. They are also not unique: every private network in the world uses the same three ranges, and this non-uniqueness becomes relevant the moment two networks have to be connected — through a VPN, through a merger, through any kind of peering. Overlapping private ranges collide. The standard mitigation is to pick a less-common sub-range of the 10.0.0.0/8 space — for instance `10.47.0.0/16` — on the assumption that collisions with the same random choice elsewhere will be rare. This is pragmatic and it works, but it is worth acknowledging as the workaround it is.
 
@@ -42,7 +42,7 @@ IPv6 gives 128 bits. The abundance is not the important part; the important part
 
 IPv6 also has private space, called *unique local addresses* (ULA),
 in the range `fc00::/7`. ULA is used similarly to RFC 1918 space but the
-expectation and the usual practice is that organizations use *global
+expectation and the usual practice is that organisations use *global
 unicast* IPv6 addresses internally, allocated from the provider, and
 rely on the firewall for isolation rather than on non-routability. The
 architectural benefit is a flat, consistent addressing model in which
@@ -64,7 +64,7 @@ A subnet is not just a size class; it is a *segmentation primitive*.
 Each subnet is a broadcast domain at Layer 2 and a routing domain
 participant at Layer 3. Traffic between subnets crosses a router, and
 every router is a place where a firewall can inspect that traffic. The
-architect decides how many subnets the organization needs, and the
+architect decides how many subnets the organisation needs, and the
 answer is rarely "as few as possible."
 
 A useful convention, at this scale, is one subnet per *trust zone*
@@ -141,7 +141,7 @@ accordingly. Static routing has no protocol, no packets exchanged
 between routers, no convergence, no timers. It is the simplest possible
 mechanism for populating a routing table.
 
-For an organization of five to a hundred people, static routing is
+For an organisation of five to a hundred people, static routing is
 almost always the correct default. The topology is usually a single
 site, with a single edge router and perhaps a Layer 3 switch behind it.
 Even multi-site deployments with two or three sites connected by VPN
@@ -173,7 +173,7 @@ two automatically. For a single-site network with a flat internal
 topology, it cannot do anything static routing does not already do.
 
 At the scale this course addresses, dynamic routing is the exception,
-not the rule. An organization that finds itself deploying OSPF between
+not the rule. An organisation that finds itself deploying OSPF between
 its routers should ask, honestly, what the failure mode is that the
 protocol is guarding against and whether static routing plus a
 monitored failover script would accomplish the same thing with less
@@ -202,7 +202,7 @@ forwarded to them. This is the *route injection* attack, and it
 requires only the ability to send OSPF packets on a participating
 interface.
 
-The defenses are two, both mandatory if OSPF is deployed at all. First,
+The defences are two, both mandatory if OSPF is deployed at all. First,
 enable *cryptographic authentication* on every OSPF adjacency —
 HMAC-SHA authentication for OSPFv2, IPsec AH for OSPFv3 — so that every
 OSPF packet carries a keyed hash that a legitimate neighbour can produce
@@ -244,7 +244,7 @@ host's routing table on the local segment).
 The attack surface of ICMP is small but real. `ICMP redirect` instructs
 a host that a better next-hop exists for a given destination; an
 attacker on the local segment can emit redirects to divert a host's
-traffic through themselves. The defense is to disable acceptance of ICMP
+traffic through themselves. The defence is to disable acceptance of ICMP
 redirects on every host — a single sysctl on Linux,
 `net.ipv4.conf.all.accept_redirects=0` — and to have the firewall drop
 them at the edge. `Smurf` attacks, which relied on directed broadcasts
@@ -307,7 +307,7 @@ Protocol* (NDP), which is classified as *PDU Address Translation*
 (IPv6 → MAC) and carried within ICMPv6. NDP performs the same job as
 ARP, with the same unauthenticated default, and has the same category
 of vulnerabilities; the Layer 2 chapter's analysis of ARP applies with
-very little modification. The IPv6 analog of DHCP snooping is *RA
+very little modification. The IPv6 analogue of DHCP snooping is *RA
 Guard*, a switch feature that prevents rogue Router Advertisements
 from being forwarded; it is the mechanism that prevents an attacker
 from advertising themselves as the default gateway to every IPv6 host
@@ -413,7 +413,7 @@ engineers whose primary skill is getting IPsec tunnels to come up.
 The course does not forbid IPsec, but it strongly prefers the
 alternative discussed next. Where IPsec appears in a deployment at this
 scale, it is usually for one specific reason: the other end is a vendor
-device that only speaks IPsec, and the organization is connecting to a
+device that only speaks IPsec, and the organisation is connecting to a
 partner, a legacy site, or a cloud provider that requires it. In those
 cases, document the configuration precisely, keep the key material
 under the same management as every other secret, and accept the
@@ -425,7 +425,7 @@ complexity as the cost of interoperability.
 for internal traffic. It is not IPsec; in the vocabulary of the
 classification, it is best understood as an *Inter-Layer Composite*:
 it bundles a Layer 4 transport (UDP), a handshake protocol, a
-cryptographic construction, and the tunneling of IP packets through the
+cryptographic construction, and the tunnelling of IP packets through the
 resulting session, under a single name. What arrives at a WireGuard
 interface looks like an IP packet; what leaves on the wire is a UDP
 datagram carrying an authenticated, encrypted ciphertext. The machinery
@@ -474,7 +474,7 @@ be attacked in any way that compromises the data.
 
 This is the split the introduction names. The *underlay* is the
 physical and logical network that carries UDP, maintained by the
-organization's router and firewall configuration. The *overlay* is
+organisation's router and firewall configuration. The *overlay* is
 the WireGuard mesh, maintained by peer configurations and keys. Hosts
 address each other through the overlay. Routing at the underlay
 concerns itself only with reachability between WireGuard endpoints,
@@ -540,7 +540,7 @@ anything silently. *Egress filtering* is at least as important as
 ingress filtering. A host that is not allowed to initiate arbitrary
 outbound connections cannot establish command-and-control channels to
 arbitrary internet destinations; a host that can is one compromise away
-from exfiltration. Organizations routinely treat outbound as
+from exfiltration. Organisations routinely treat outbound as
 trusted-by-default, and this is the single largest structural
 concession to attacker convenience in most networks. *Firewalls are
 not single-perimeter objects*. Every host runs a host firewall. Every
@@ -558,12 +558,12 @@ to the architectural responses.
 *Route injection into an IGP* (OSPF being the usual target at this
 scale) inserts attacker-controlled routes into the routing table,
 causing traffic for the affected prefix to be forwarded to the
-attacker. Defense: OSPF authentication on every adjacency, passive
+attacker. Defence: OSPF authentication on every adjacency, passive
 interfaces on every host-facing port, strong preference for static
 routing where topology permits. Residual risk: mitigated further by
 the mesh VPN, which makes the diverted traffic unreadable.
 
-*BGP hijacking* is the public-internet analog: an autonomous system
+*BGP hijacking* is the public-internet analogue: an autonomous system
 announces prefixes it does not own, and other ASes accept the
 announcement. This happens routinely on the public internet and is
 mostly outside the small-business operator's direct control; the
@@ -573,15 +573,15 @@ matters, since a hijack diverts the packets but does not decrypt them.
 
 *IP spoofing* inserts packets with forged source addresses into the
 network. The historical use was in reflection-amplification attacks
-against third parties; the defense at the edge is *unicast reverse
+against third parties; the defence at the edge is *unicast reverse
 path forwarding* (uRPF), which drops packets arriving on an interface
 whose source address the router would not route back out of the same
 interface. Enabling uRPF at the internet edge is a small configuration
-change that prevents the organization's network from being used as a
+change that prevents the organisation's network from being used as a
 reflector in other people's attacks.
 
 *ICMP redirect attacks* on the local segment alter a host's routing
-table by sending forged redirect messages. Defense: disable redirect
+table by sending forged redirect messages. Defence: disable redirect
 acceptance on every host, drop redirects at the edge.
 
 *Reconnaissance* through ICMP sweeps, traceroute, and OS
@@ -594,12 +594,12 @@ answer from the internet cannot be fingerprinted from the internet.
 
 *DDoS* at Layer 3 — volumetric floods of traffic targeting public
 services — is largely outside the defender's direct control at this
-scale; the organization's pipe can be saturated by a determined
+scale; the organisation's pipe can be saturated by a determined
 attacker regardless of how the internal network is configured. The
 mitigation is architectural: services that require public availability
 are placed behind a provider whose business is absorbing volumetric
-attacks, not run from the organization's own edge. An email server on
-the organization's own IP can be DDoSed; the organization's inbound
+attacks, not run from the organisation's own edge. An email server on
+the organisation's own IP can be DDoSed; the organisation's inbound
 email through a provider cannot be, or at least cannot be without
 taking the provider down with it.
 
@@ -638,9 +638,9 @@ by default and allows only the specific flows the host is supposed to
 participate in. Every subnet boundary has a firewall policy that denies
 by default and allows only the flows permitted between those zones. The
 edge router has a firewall policy that denies inbound by default,
-permits the specific inbound services the organization runs from its
+permits the specific inbound services the organisation runs from its
 own IP (if any), and permits outbound traffic on specific categories
-consistent with the organization's egress policy. Each of these
+consistent with the organisation's egress policy. Each of these
 policies lives in version control. Each is reviewable. Each is
 reproducible.
 
@@ -658,8 +658,8 @@ nothing to security that the firewall does not also provide.
 
 The result, measured against the principles in the introduction, is an
 architecture that does not rely on Layer 3 being uncompromised for the
-organization's data to be safe. The underlay can be attacked and the
-organization's traffic remains confidential. Individual hosts can be
+organisation's data to be safe. The underlay can be attacked and the
+organisation's traffic remains confidential. Individual hosts can be
 compromised and the blast radius is bounded by the firewall policies
 that sit between them and every other host. Mistakes in routing
 configuration degrade availability but do not produce disclosure. The
@@ -671,10 +671,10 @@ does when you examine it, not what a policy document says it should do.
 
 The components that implement the architecture described above are all
 open-source and all run on the Linux boxes that are already the
-organization's infrastructure substrate.
+organisation's infrastructure substrate.
 
 The *Linux kernel itself* is the router. IP forwarding, the routing
-table, policy routing with multiple tables and fwmarks, neighbor cache,
+table, policy routing with multiple tables and fwmarks, neighbour cache,
 and every primitive the forwarding plane requires are in the kernel. A
 Linux host with two or more interfaces and `ip_forward=1` is a router,
 and the configuration lives in `/etc/network/` or `/etc/systemd/network/`
@@ -733,7 +733,7 @@ with their own rules.
 the topology genuinely requires automatic convergence on redundant
 paths; when deployed, with cryptographic authentication on every
 adjacency and passive interfaces on every host-facing port. BGP only
-where the organization peers directly with multiple upstreams, which
+where the organisation peers directly with multiple upstreams, which
 at this scale is rare.
 
 *The NAT posture.* NAT at the IPv4 edge as a necessity, understood
@@ -752,9 +752,9 @@ allowed categories.
 within link-local scope). Rate-limit. Deny redirects. Deny redirect
 acceptance on every host.
 
-*The encrypted overlay.* WireGuard mesh between all hosts, with peer configuration managed as code. Internal services listen on the overlay address, not the underlay. The underlay's job is to carry UDP between WireGuard peers; nothing else rides on its confidentiality or integrity.  *DHCP, DNS, and operational services.* Kea or dnsmasq providing address assignment, with reservations for infrastructure. DHCP snooping enabled at the switches as defense in depth. DNS configured to point at organizational resolvers that enforce the organization's name-resolution policy. 
+*The encrypted overlay.* WireGuard mesh between all hosts, with peer configuration managed as code. Internal services listen on the overlay address, not the underlay. The underlay's job is to carry UDP between WireGuard peers; nothing else rides on its confidentiality or integrity.  *DHCP, DNS, and operational services.* Kea or dnsmasq providing address assignment, with reservations for infrastructure. DHCP snooping enabled at the switches as defence in depth. DNS configured to point at organisational resolvers that enforce the organisation's name-resolution policy. 
 
-*Monitoring posture.* The metadata of Layer 3 traffic — source and destination prefixes, connection counts, volumes, timing — is captured and analyzed. The contents are encrypted and not inspected, in keeping with the introduction's position on break-and-inspect. NetFlow or IPFIX from the edge router, firewall logs from every enforcement point, and flow records from WireGuard peers collectively provide the observable surface.
+*Monitoring posture.* The metadata of Layer 3 traffic — source and destination prefixes, connection counts, volumes, timing — is captured and analysed. The contents are encrypted and not inspected, in keeping with the introduction's position on break-and-inspect. NetFlow or IPFIX from the edge router, firewall logs from every enforcement point, and flow records from WireGuard peers collectively provide the observable surface.
 
 The architecture that emerges from these decisions is small. It has a flat, legible addressing plan, a narrow underlay, a cryptographicoverlay that carries the real trust, firewall policies that live as
 code, and a handful of well-understood daemons implementing every required function. It treats Layer 3 as plumbing — necessary, competent, and not where the security lives. The security lives in the keys, in the firewall policies, and in the architect's decisions about what is allowed to talk to what. Layer 3 is the layer that makes the plumbing work. The introduction's principles, applied at this layer, produce exactly this: a network whose routing is correct because

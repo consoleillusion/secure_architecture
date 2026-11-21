@@ -8,7 +8,7 @@
 
 === Layer 1 - Physical Layer
 
-Layer 0 gave us a medium: something through which energy can travel. Layer 1 is the standard that says how to use that medium to carry bits. The word _bit_ is doing work here. Before Layer 1 there are no bits. There are voltages on a wire, there is light intensity inside a fiber, there is an electromagnetic wave with some amplitude and phase. Layer 1 is the agreement between two endpoints about how to interpret one of those continuous physical signals as a discrete sequence of ones and zeros. Above Layer 1, the rest of the stack is entitled to assume that bits arrive faithfully. Below Layer 1, nothing in the stack has any reason to believe anything.
+Layer 0 gave us a medium: something through which energy can travel. Layer 1 is the standard that says how to use that medium to carry bits. The word _bit_ is doing work here. Before Layer 1 there are no bits. There are voltages on a wire, there is light intensity inside a fibre, there is an electromagnetic wave with some amplitude and phase. Layer 1 is the agreement between two endpoints about how to interpret one of those continuous physical signals as a discrete sequence of ones and zeros. Above Layer 1, the rest of the stack is entitled to assume that bits arrive faithfully. Below Layer 1, nothing in the stack has any reason to believe anything.
 
 If your role us to design and implement small scale business architecture, you don't need to understand most of the complexity at this level. The complexity largely belongs to people involved in areas like network card design, Ethernet, and WiFi standards. If you want to optimise and make enterprise decisions about adopting new routers that support the latest WiFi or Ethernet standards you may also need to learn more. This course focuses on implementing modern defaults, not differentiating between every existing standard.
 
@@ -20,7 +20,7 @@ The OSI model is usually drawn as a single stack of seven neat layers, which imp
 
 The two standards that almost every SMB infrastructure will use are:
 
-- *IEEE 802.3* ,  commonly called _Ethernet_ --- the standard for bits over wired media: copper twisted pair, coaxial cable, and optical fiber. It transforms a controlled voltage on a wire, or a controlled pulse of light in glass, into a bitstream.
+- *IEEE 802.3* ,  commonly called _Ethernet_ --- the standard for bits over wired media: copper twisted pair, coaxial cable, and optical fibre. It transforms a controlled voltage on a wire, or a controlled pulse of light in glass, into a bitstream.
 - *IEEE 802.11* ,  commonly called _Wi-Fi_ --- the standard for bits over radio in open air. It transforms a modulated electromagnetic wave propagating through a room into a bitstream.
 
 Both occupy Layer 1. Both produce a bitstream that Layer 2 can frame. Neither has anything to say about the other. Below the Layer 2 handoff they are different worlds.
@@ -29,9 +29,9 @@ Both occupy Layer 1. Both produce a bitstream that Layer 2 can frame. Neither ha
 
 What 802.3 and 802.11 do share is the _shape_ of the problem they solve. Converting continuous physical energy into discrete bits turns out to decompose into three concerns that are independent enough that the IEEE specifications name them separately and permit them to evolve separately.
 
-*PMD ,  Physical Medium Dependent.* Everything specific to the medium itself. Driving voltages onto copper. Modulating a laser into fiber. Radiating an electromagnetic wave from an antenna. The PMD is what changes when the medium changes.
+*PMD ,  Physical Medium Dependent.* Everything specific to the medium itself. Driving voltages onto copper. Modulating a laser into fibre. Radiating an electromagnetic wave from an antenna. The PMD is what changes when the medium changes.
 
-*PMA ,  Physical Medium Attachment.* The interface between the medium-specific world and the medium-independent world. Serializes parallel data into a single bit stream for transmission, reverses it on receive, and recovers the sender's clock from the incoming signal so the receiver knows where each bit begins and ends.
+*PMA ,  Physical Medium Attachment.* The interface between the medium-specific world and the medium-independent world. Serialises parallel data into a single bit stream for transmission, reverses it on receive, and recovers the sender's clock from the incoming signal so the receiver knows where each bit begins and ends.
 
 *PCS ,  Physical Coding Sublayer.* Converts between the abstract bitstream Layer 2 produces and the physically-robust symbol stream the PMA will actually transmit. Line coding lives here --- the schemes that ensure the signal has enough transitions to be recoverable and enough redundancy to survive the medium's characteristic errors.
 
@@ -55,7 +55,7 @@ What 802.3 and 802.11 do share is the _shape_ of the problem they solve. Convert
     node((+1, 1), [OFDM, \ QAM-256 / 1024], fill: teal.lighten(50%), shape: fletcher.shapes.rect),
 
     // PMA row
-    node((-1, 2), [Serializer / \ deserializer, clock], fill: green.lighten(50%), shape: fletcher.shapes.rect),
+    node((-1, 2), [Serialiser / \ deserialiser, clock], fill: green.lighten(50%), shape: fletcher.shapes.rect),
     node((0,  2), [*PMA*], stroke: 0.8pt, fill: white, shape: fletcher.shapes.rect),
     node((+1, 2), [Antenna, \ RF front-end], fill: green.lighten(50%), shape: fletcher.shapes.rect),
 
@@ -65,7 +65,7 @@ What 802.3 and 802.11 do share is the _shape_ of the problem they solve. Convert
     node((+1, 3), [Radio transmitter \ 2.4 / 5 / 6 GHz], fill: olive.lighten(50%), shape: fletcher.shapes.rect),
 
     // Medium row
-    node((-1, 4), [Copper twisted \ pair, or fiber], fill: gray.lighten(50%), shape: fletcher.shapes.rect),
+    node((-1, 4), [Copper twisted \ pair, or fibre], fill: gray.lighten(50%), shape: fletcher.shapes.rect),
     node((0,  4), [*Medium*], stroke: 0.8pt, fill: white, shape: fletcher.shapes.rect),
     node((+1, 4), [Open air], fill: gray.lighten(50%), shape: fletcher.shapes.rect),
 
@@ -82,15 +82,15 @@ What 802.3 and 802.11 do share is the _shape_ of the problem they solve. Convert
 
 #v(0.3em)
 
-The separation is not arbitrary. It is the same principle the introduction named as *separation of policy from mechanism*, applied to standards authoring instead of access control. The PCS does not need to know what medium its symbols will ride on; the PMD does not need to know what the bits it transmits mean. Each sublayer can be redesigned independently. When a new fiber type becomes deployable, only the PMD changes. When a new modulation scheme enables higher bitrates over the same cable, only the PCS changes. The modularity is the reason Ethernet has survived from 10 Mbps to 400 Gbps without being thrown out and rewritten, and it is the reason the same Wi-Fi driver on a laptop can talk to an access point radio it has never seen before, at a bitrate that did not exist when the laptop was manufactured.
+The separation is not arbitrary. It is the same principle the introduction named as *separation of policy from mechanism*, applied to standards authoring instead of access control. The PCS does not need to know what medium its symbols will ride on; the PMD does not need to know what the bits it transmits mean. Each sublayer can be redesigned independently. When a new fibre type becomes deployable, only the PMD changes. When a new modulation scheme enables higher bitrates over the same cable, only the PCS changes. The modularity is the reason Ethernet has survived from 10 Mbps to 400 Gbps without being thrown out and rewritten, and it is the reason the same Wi-Fi driver on a laptop can talk to an access point radio it has never seen before, at a bitrate that did not exist when the laptop was manufactured.
 
 ==== Ethernet: voltage on wire becomes bits
 
-Ethernet's Layer 1 is a wired standard. Its PMD drives electricity into copper or light into glass. For most SMB infrastructure the medium is twisted-pair copper ,  Category 5e, Category 6, or Category 6A --- with optical fiber reserved for distances or electromagnetic environments that copper cannot survive. The naming convention is compact and worth recognising on sight: _10BASE-T_ means 10 Mbps, baseband signalling (the entire cable bandwidth is used for a single signal rather than divided into channels), over twisted pair. _1000BASE-LX_ means 1 Gbps, baseband, long-wavelength laser over single-mode fiber. The speed and medium are encoded directly in the name.
+Ethernet's Layer 1 is a wired standard. Its PMD drives electricity into copper or light into glass. For most SMB infrastructure the medium is twisted-pair copper ,  Category 5e, Category 6, or Category 6A --- with optical fibre reserved for distances or electromagnetic environments that copper cannot survive. The naming convention is compact and worth recognising on sight: _10BASE-T_ means 10 Mbps, baseband signalling (the entire cable bandwidth is used for a single signal rather than divided into channels), over twisted pair. _1000BASE-LX_ means 1 Gbps, baseband, long-wavelength laser over single-mode fibre. The speed and medium are encoded directly in the name.
 
 The PMD's tools are crude: it can raise or lower the voltage on a pair of wires, or it can flash a laser on and off. The PCS is where these crude primitives become a signal the receiver can actually decode. Early Ethernet encoded each bit as a voltage level ,  non-return-to-zero, NRZ --- which is simple but fragile: a long run of zeros produces no transitions and the receiver's clock drifts. Manchester coding fixed that at 10 Mbps by guaranteeing a transition in every bit period, at the cost of doubling the required bandwidth. Modern high-speed Ethernet at 25 Gbps and above uses PAM-4, which carries two bits per symbol by using four voltage levels instead of two, packing more data into the same copper at the cost of a smaller noise margin and more aggressive error correction. Each encoding was chosen to preserve bit recoverability as the signalling rate pushed against what the medium could carry. The arithmetic below the line keeps changing; the interface at the top stays the same.
 
-The architectural property that matters about Ethernet's Layer 1 is that the signal _mostly_ stays in the cable. Copper emanates a weak electromagnetic field that can in principle be detected at short range ,  the TEMPEST problem discussed at Layer 0 --- but the field falls off rapidly and the signal is not a broadcast in any practical sense. Fiber emanates almost nothing. Cable selection and cable placement are therefore security decisions, not merely performance decisions that happen to have security consequences. A fiber run through a controlled plenum is defensible against interception in a way that an unshielded copper run along a wall shared with a neighbouring tenant is not, and that difference is a property of Layer 1.
+The architectural property that matters about Ethernet's Layer 1 is that the signal _mostly_ stays in the cable. Copper emanates a weak electromagnetic field that can in principle be detected at short range ,  the TEMPEST problem discussed at Layer 0 --- but the field falls off rapidly and the signal is not a broadcast in any practical sense. Fibre emanates almost nothing. Cable selection and cable placement are therefore security decisions, not merely performance decisions that happen to have security consequences. A fibre run through a controlled plenum is defensible against interception in a way that an unshielded copper run along a wall shared with a neighbouring tenant is not, and that difference is a property of Layer 1.
 
 ==== Wi-Fi: waves in air become bits
 
@@ -108,7 +108,7 @@ But those upper-layer guarantees assume Layer 1 is doing its job. A TLS connecti
 
 The security-architectural consequences of Layer 1 choice are therefore direct, and they follow from principles already stated in the introduction:
 
-+ *Choose the medium whose emanation properties match the threat model.* Fiber for uncontrolled runs. Copper for short runs in physically controlled space. Wi-Fi only where the traffic riding on it is already protected by a layer above ,  which, in this course's architecture, with an encrypted mesh VPN as the default for internal traffic, it always is.
++ *Choose the medium whose emanation properties match the threat model.* Fibre for uncontrolled runs. Copper for short runs in physically controlled space. Wi-Fi only where the traffic riding on it is already protected by a layer above ,  which, in this course's architecture, with an encrypted mesh VPN as the default for internal traffic, it always is.
 + *Do not rely on Layer 1 for identity or confidentiality.* It cannot provide them. A cable plugged into a physically present port is no more trustworthy than a laptop that has just associated with an access point; both are at the start of a chain that must be authenticated and encrypted at higher layers. An architecture that trusts the physical port is an architecture with a soft interior boundary.
 + *Treat the physical path as part of the architecture.* Where cables run, where access points emit, which neighbours share the plenum or the airspace ,  these are architectural facts, not facilities concerns to be delegated. A correctly built network is correct about its physical path or it is not correct at all.
 

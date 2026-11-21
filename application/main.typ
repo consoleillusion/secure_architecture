@@ -3,10 +3,10 @@
 *Goal:* students ship software whose architecture answers where trust boundaries, secrets, and origin live.
 
 === Secure coding discipline
-- Input validation and canonicalization at trust boundaries
+- Input validation and canonicalisation at trust boundaries
 - Output encoding per context
-- Parameterized queries
-- Safe deserialization
+- Parameterised queries
+- Safe deserialisation
 
 === Secrets management in applications
 - Delivery patterns (env, mounted, SDK-fetched)

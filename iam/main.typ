@@ -3,9 +3,9 @@
 *Goal:* identity as the new perimeter, implemented.
 
 === Identity architecture
-- Authentication vs. authorization vs. accounting
+- Authentication vs. authorisation vs. accounting
 - Directory (LDAP) foundations, when it is still appropriate
-- Federated vs. centralized models
+- Federated vs. centralised models
 
 === Modern identity protocols
 - OIDC (built on OAuth 2.0): flows, tokens, PKCE
@@ -97,7 +97,7 @@ authentication is contextualised, and the network's role contracts to
 delivering bytes between authenticated endpoints rather than deciding
 which endpoints are allowed to talk.
 
-This is what the introduction has been pointing toward. The principle
+This is what the introduction has been pointing towards. The principle
 of *complete mediation*, that every access to every object is checked
 every time, has no meaningful implementation if the check happens at a
 network boundary the request never crosses. It has to happen at the
@@ -547,7 +547,7 @@ human authentication, with hardware tokens as the primary
 authenticator and a platform authenticator (TPM-backed on Windows,
 Secure Enclave on macOS, hardware-backed keystore on Android) as the
 fallback for routine use.* Passwords as the bootstrap during
-enrollment and as the recovery path that goes through a controlled
+enrolment and as the recovery path that goes through a controlled
 out-of-band process. TOTP grudgingly accepted for the dwindling
 population of services that do not yet support WebAuthn, with an
 explicit migration plan. Push notifications avoided. SMS-based
@@ -921,7 +921,7 @@ in {
         "tls keyfile"          = "tls/key.pem";
         "tls certfile"         = "tls/cert.pem";
         "tls cafile"           = "tls/ca.pem";
-        # Audit: ship every authentication and authorization
+        # Audit: ship every authentication and authorisation
         # decision into the journal at a level the observability
         # pipeline picks up.
         "log level"            = "1 auth_audit:3 auth_json_audit:3";

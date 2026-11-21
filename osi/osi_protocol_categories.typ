@@ -4,7 +4,7 @@
 
 ==== Introduction
 
-Most introductions to the OSI model treat it as a memory exercise — seven layers to recite, acronyms to memorize, exam questions to pass. When pressed for precision, teachers often retreat to "real protocols don't fit the model cleanly, it's just a guide." This is unsatisfying and misses the point entirely.
+Most introductions to the OSI model treat it as a memory exercise — seven layers to recite, acronyms to memorise, exam questions to pass. When pressed for precision, teachers often retreat to "real protocols don't fit the model cleanly, it's just a guide." This is unsatisfying and misses the point entirely.
 
 The OSI model is not a taxonomy. It is an argument: that every useful thing a computer network does is only possible because something more fundamental exists beneath it. Each layer is not merely related to the one below; it is *required* by it. Remove any layer and everything above it collapses. Understanding this dependency chain is what separates someone who knows networking from someone who can reason about it.
 
@@ -22,7 +22,7 @@ Before anything else, there must be something for a signal to travel through. Co
 
 ===== Layer 1 — Bits
 
-A medium alone produces nothing useful. Layer 1 is where deliberate structure is imposed on the medium: voltages are driven onto copper, lasers pulse into fiber, radio waves are modulated in air. These structured variations — ones and zeros — are the first emergence of *information* from pure physics. The critical insight is that a bit does not exist at Layer 0. It is a Layer 1 invention, made possible only because the medium beneath it can carry a distinguishable signal.
+A medium alone produces nothing useful. Layer 1 is where deliberate structure is imposed on the medium: voltages are driven onto copper, lasers pulse into fibre, radio waves are modulated in air. These structured variations — ones and zeros — are the first emergence of *information* from pure physics. The critical insight is that a bit does not exist at Layer 0. It is a Layer 1 invention, made possible only because the medium beneath it can carry a distinguishable signal.
 
 ===== Layer 2 — Frames
 

@@ -1,20 +1,20 @@
 == Observability
 
-*Goal:* the architecture decides at design time what every component emits, through what pipeline, with what retention, integrity, and access control. Operations, defense, and compliance are consumers of that output, they do not get to rebuild it after the fact.
+*Goal:* the architecture decides at design time what every component emits, through what pipeline, with what retention, integrity, and access control. Operations, defence, and compliance are consumers of that output, they do not get to rebuild it after the fact.
 
 === Observability as an architectural discipline
 - The three pillars: logs, metrics, traces, what each answers and where it fails
 - Emit-by-design: every component names what it exposes before it is deployed
 - Retention, integrity, access control, and cost as design parameters
 - Observability and SIEM are the same pipeline with different retention and access policies, not two stacks
-- Why separate ops and security observability pipelines is organizational failure dressed as architecture
+- Why separate ops and security observability pipelines is organisational failure dressed as architecture
 
 === Collection and pipeline
 - OpenTelemetry as the unifying collection layer (SDK, Collector)
 - Log shippers: Fluent Bit, Vector, Logstash, trade-offs and placement
 - Metrics: Prometheus, VictoriaMetrics, pull vs push, cardinality as a design constraint
 - Traces: Jaeger, Tempo, sampling strategies
-- Schema normalization (ECS, OpenTelemetry semantic conventions)
+- Schema normalisation (ECS, OpenTelemetry semantic conventions)
 
 === Storage and access
 - Hot, warm, and cold tiering
