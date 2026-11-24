@@ -25,5 +25,3 @@
 - Third-party risk: SBOMs and contractual controls as practical handles
 
 *Architectural question a graduate answers:* *what does the business have to answer for in law, what architectural choices reduce that surface, and what controls can you produce under audit without operational theater?*
-
-#pagebreak()

@@ -1,10 +1,5 @@
 #import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
 
-#set page(
-  paper: "us-trade",
-  margin: (x: 2cm, y: 2cm),
-)
-#set text(black, font: "New Computer Modern")
 
 === Layer 1 - Physical Layer
 

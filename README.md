@@ -29,9 +29,9 @@ minimizing the trusted computing base — to every component.
 - The host, application security, observability, resilience, and governance
   chapters currently exist primarily as structured outlines with `Goal:` lines
   and bullet-point topics.
-- The `automation/` chapter is written but commented out in `main.typ`; the
-  intention is to distribute its material across the relevant chapters rather
-  than keep it standalone.
+- The `src/automation/` chapter is written but commented out in `src/main.typ`;
+  the intention is to distribute its material across the relevant chapters
+  rather than keep it standalone.
 - `osi/` contains a multi-file treatment of networking with per-layer files,
   diagrams, and a ports reference. Layers 5, 6, and 8 are currently commented
   out of `osi/main.typ`; files ending in `.typOLD` are older drafts, not part
@@ -43,24 +43,26 @@ minimizing the trusted computing base — to every component.
 
 ```
 ./
-├── main.typ                 # root document; include order = chapter order
-├── introduction/            # one main.typ per chapter
-├── foundations/
-├── osi/                     # networking chapter, split by layer/topic
-├── host/
-├── iam/
-├── data_security/
-├── application/
-├── observability/
-├── adverserial/             # chapter on adversary awareness
-├── incentives/              # human behaviour, incentives, economics
-├── resilience/
-├── grc/
-├── automation/              # currently excluded from the build
-└── secure_architecture.pdf  # generated snapshot
+├── compile.sh                # build script; writes the PDF at the project root
+├── src/
+│   ├── main.typ              # root document; include order = chapter order
+│   ├── introduction/         # one main.typ per chapter
+│   ├── foundations/
+│   ├── osi/                  # networking chapter, split by layer/topic
+│   ├── host/
+│   ├── iam/
+│   ├── data_security/
+│   ├── application/
+│   ├── observability/
+│   ├── adverserial/          # chapter on adversary awareness
+│   ├── incentives/           # human behaviour, incentives, economics
+│   ├── resilience/
+│   ├── grc/
+│   └── automation/           # currently excluded from the build
+└── secure_architecture.pdf   # generated snapshot
 ```
 
-`main.typ` is the root document, and the chapter directories are its includes.
+`src/main.typ` is the root document, and the chapter directories under `src/` are its includes.
 
 ## Building
 
@@ -71,11 +73,17 @@ Requirements:
 - Network access on first build if the `@preview` packages (`tablem`,
   `fletcher`) are not already in the Typst package cache.
 
-From this directory:
+From the project root:
 
 ```sh
-typst compile main.typ secure_architecture.pdf
-typst compile --features html --format html main.typ secure_architecture.html
+./compile.sh                       # writes ./secure_architecture.pdf
+./compile.sh /tmp/book.pdf         # optional custom output path
+```
+
+Or compile directly:
+
+```sh
+typst compile src/main.typ secure_architecture.pdf
 ```
 
 HTML export is unstable and emits warnings for page rules, page breaks, and
@@ -85,8 +93,8 @@ diagrams; the PDF is the canonical output for now.
 
 - Write Typst. Chapter files use `== Chapter title` as their first line and
   conventionally end with `#pagebreak()`.
-- To add a chapter, create `<chapter>/main.typ` and add an `#include` line to
-  `main.typ` in the position where it belongs.
+- To add a chapter, create `src/<chapter>/main.typ` and add an `#include` line
+  to `src/main.typ` in the position where it belongs.
 - Cite sources inline where they inform architectural claims (NIST SP 800-33,
   Saltzer and Schroeder, NIST 800-63B, and so on).
 - Keep outlines when a section is unfinished — the bullet lists are intentional

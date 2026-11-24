@@ -40,9 +40,7 @@
 *Architectural question a graduate answers:* *what would a pentester find, what does malware need to succeed, what detection surfaces has the architecture exposed, and what architectural decisions make all three harder?*
 
 
-== Adversary Awareness
-
-*Goal:* enough understanding of offensive methodology, malware
+The goal is enough understanding of offensive methodology, malware
 behaviour, and defender consumption to make architectural decisions
 that deny adversaries the conditions they need and expose the
 detection surfaces that catch them when denial fails. Not to operate

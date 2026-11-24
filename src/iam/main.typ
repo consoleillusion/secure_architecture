@@ -38,9 +38,7 @@
 - Pomerium, oauth2-proxy
 
 
-== Identity Management
-
-*Goal:* centralised identity as the substrate every other layer
+The goal is centralised identity as the substrate every other layer
 authenticates against, operated as code, recoverable, and cross-platform
 by construction rather than by adapter.
 
