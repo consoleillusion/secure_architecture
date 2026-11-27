@@ -30,12 +30,12 @@ minimizing the trusted computing base — to every component.
   chapters currently exist primarily as structured outlines with `Goal:` lines
   and bullet-point topics.
 - The automation chapter is written as Markdown but excluded from the render
-  list in `src/index.typ`; the intention is to distribute its material across
-  the relevant chapters rather than keep it standalone.
-- `src/building_the_stack/secure_networking/` contains a multi-file treatment
-  of networking with per-layer files, a diagram, and a ports reference. Layers
-  5, 6, and 8 and `ports.md` are currently excluded from the render list.
-  Files ending in `.typOLD` under `src/osi/` are older Typst drafts, not part
+  list in `content/index.typ`; the intention is to distribute its material
+  across the relevant chapters rather than keep it standalone.
+- `content/building_the_stack/` contains the networking chapter plus its
+  per-layer sections, a diagram, and a ports reference. Layers 5, 6, and 8 and
+  the ports reference are currently excluded from the render list. Files
+  ending in `.typOLD` under `content/osi/` are older Typst drafts, not part
   of the build.
 - `secure_architecture.pdf` is a generated snapshot. Regenerate it after
   editing sources; do not edit it directly.
@@ -45,35 +45,35 @@ minimizing the trusted computing base — to every component.
 ```
 ./
 ├── compile.sh                # build script; writes the PDF at the project root
-├── src/
+├── content/
 │   ├── index.typ             # root document; render order = chapter order
 │   ├── principles_and_premises/
-│   │   ├── introduction/main.md
-│   │   └── foundations/main.md
+│   │   ├── introduction.md
+│   │   └── foundations.md
 │   ├── building_the_stack/
-│   │   ├── secure_networking/
-│   │   │   ├── main.md       # chapter intro, quote and OSI table
-│   │   │   ├── protocol_categories.md
-│   │   │   ├── layer0.md … layer8.md
-│   │   │   └── ports.md      # excluded reference
-│   │   ├── host_security/main.md
-│   │   ├── identity_pki_zero_trust/main.md
-│   │   ├── data_security/main.md
-│   │   ├── application_supply_chain/main.md
-│   │   └── automation/main.md # excluded from the build
+│   │   ├── secure_networking.md
+│   │   ├── secure_networking_protocol_categories.md
+│   │   ├── secure_networking_layer0.md … secure_networking_layer8.md
+│   │   ├── secure_networking_ports.md  # excluded reference
+│   │   ├── host_security.md
+│   │   ├── identity_pki_zero_trust.md
+│   │   ├── data_security.md
+│   │   ├── application_supply_chain.md
+│   │   └── automation.md     # excluded from the build
 │   ├── operating_and_defending/
-│   │   ├── observability/main.md
-│   │   ├── adversary_awareness/main.md
-│   │   └── resilience/main.md
+│   │   ├── observability.md
+│   │   ├── adversary_awareness.md
+│   │   └── resilience.md
 │   └── people_incentives_and_obligation/
-│       ├── human_layer/main.md
-│       └── governance_compulsion_privacy/main.md
+│       ├── human_layer.md
+│       └── governance_compulsion_privacy.md
 └── secure_architecture.pdf   # generated snapshot
 ```
 
-`src/index.typ` is the only Typst source. It renders the Markdown files with
-cmarker; the order of its `render-md` calls is the chapter order. Older
-`.typOLD` drafts remain under `src/osi/` only as historical references.
+`content/index.typ` is the only Typst source. It renders the Markdown files
+with cmarker; the order of its `render-md` calls is the chapter order. Each
+part directory is flat: one `chapter_name.md` per chapter. Older `.typOLD`
+drafts remain under `content/osi/` only as historical references.
 
 ## Building
 
@@ -93,7 +93,7 @@ From the project root:
 Or compile directly:
 
 ```sh
-typst compile src/index.typ secure_architecture.pdf
+typst compile content/index.typ secure_architecture.pdf
 ```
 
 The Markdown chapters are rendered into the PDF at build time; there is no
@@ -102,16 +102,16 @@ separate site output. The PDF remains the canonical artifact.
 ## Contributing
 
 - Write Markdown. Chapter files use `# Chapter title` as their first line.
-  `src/index.typ` renders with `h1-level: 2`, so `#`, `##`, `###` become the
+  `content/index.typ` renders with `h1-level: 2`, so `#`, `##`, `###` become the
   book's chapter, section and subsection levels.
-- Page breaks are controlled in `src/index.typ`, not in chapter files. To add a
-  chapter, create `src/<part>/<chapter>/main.md` and add a `render-md` call in
-  `src/index.typ` at the position where it belongs.
+- Page breaks are controlled in `content/index.typ`, not in chapter files. To
+  add a chapter, create `content/<part>/<chapter>.md` and add a `render-md`
+  call in `content/index.typ` at the position where it belongs.
 - Use cmarker's reference syntax in Markdown: `[@label]` or
   `[Chapter][@label]`. Explicit IDs can be set with `<h2 id="label">`.
 - The physical-layer diagram is retained as a documented `<!--raw-typst ... -->`
-  block in `secure_networking/layer1.md`; `src/index.typ` provides the fletcher
-  scope. Keep such blocks rare.
+  block in `secure_networking_layer1.md`; `content/index.typ` provides the
+  fletcher scope. Keep such blocks rare.
 - Cite sources inline where they inform architectural claims (NIST SP 800-33,
   Saltzer and Schroeder, NIST 800-63B, and so on).
 - Keep outlines when a section is unfinished — the bullet lists are intentional

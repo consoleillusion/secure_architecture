@@ -194,11 +194,11 @@
   ],
 )
 #{
-  render-md("principles_and_premises/introduction/main.md", "intro")
+  render-md("principles_and_premises/introduction.md", "intro")
 }
 #pagebreak()
 #{
-  render-md("principles_and_premises/foundations/main.md", "foundations")
+  render-md("principles_and_premises/foundations.md", "foundations")
 }
 #pagebreak()
 
@@ -215,50 +215,50 @@
   ],
 )
 #{
-  render-md("building_the_stack/secure_networking/main.md", "networking")
+  render-md("building_the_stack/secure_networking.md", "networking")
 }
 #{
-  render-md("building_the_stack/secure_networking/protocol_categories.md", "protocol-categories")
-}
-#pagebreak()
-#{
-  render-md("building_the_stack/secure_networking/layer0.md", "layer0")
+  render-md("building_the_stack/secure_networking_protocol_categories.md", "protocol-categories")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/secure_networking/layer1.md", "layer1")
+  render-md("building_the_stack/secure_networking_layer0.md", "layer0")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/secure_networking/layer2.md", "layer2")
+  render-md("building_the_stack/secure_networking_layer1.md", "layer1")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/secure_networking/layer3.md", "layer3")
+  render-md("building_the_stack/secure_networking_layer2.md", "layer2")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/secure_networking/layer4.md", "layer4")
+  render-md("building_the_stack/secure_networking_layer3.md", "layer3")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/secure_networking/layer7.md", "layer7")
+  render-md("building_the_stack/secure_networking_layer4.md", "layer4")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/host_security/main.md", "host")
+  render-md("building_the_stack/secure_networking_layer7.md", "layer7")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/identity_pki_zero_trust/main.md", "identity")
+  render-md("building_the_stack/host_security.md", "host")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/data_security/main.md", "data-security")
+  render-md("building_the_stack/identity_pki_zero_trust.md", "identity")
 }
 #pagebreak()
 #{
-  render-md("building_the_stack/application_supply_chain/main.md", "application")
+  render-md("building_the_stack/data_security.md", "data-security")
+}
+#pagebreak()
+#{
+  render-md("building_the_stack/application_supply_chain.md", "application")
 }
 #pagebreak()
 
@@ -273,15 +273,15 @@
   ],
 )
 #{
-  render-md("operating_and_defending/observability/main.md", "observability")
+  render-md("operating_and_defending/observability.md", "observability")
 }
 #pagebreak()
 #{
-  render-md("operating_and_defending/adversary_awareness/main.md", "adversary-awareness")
+  render-md("operating_and_defending/adversary_awareness.md", "adversary-awareness")
 }
 #pagebreak()
 #{
-  render-md("operating_and_defending/resilience/main.md", "resilience")
+  render-md("operating_and_defending/resilience.md", "resilience")
 }
 #pagebreak()
 
@@ -295,22 +295,22 @@
   ],
 )
 #{
-  render-md("people_incentives_and_obligation/human_layer/main.md", "human-layer")
+  render-md("people_incentives_and_obligation/human_layer.md", "human-layer")
 }
 #pagebreak()
 #{
-  render-md("people_incentives_and_obligation/governance_compulsion_privacy/main.md", "grc")
+  render-md("people_incentives_and_obligation/governance_compulsion_privacy.md", "grc")
 }
 #pagebreak()
 
 /*
-Excluded drafts: automation/main.md, secure_networking/layer5.md,
-secure_networking/layer6.md, secure_networking/layer8.md, and
-secure_networking/ports.md. To build one, add a render-md call at the
+Excluded drafts: automation.md, secure_networking_layer5.md,
+secure_networking_layer6.md, secure_networking_layer8.md, and
+secure_networking_ports.md. To build one, add a render-md call at the
 appropriate point above. For example:
 
 #{
-  render-md("building_the_stack/automation/main.md", "automation")
+  render-md("building_the_stack/automation.md", "automation")
 }
 #pagebreak()
 */
