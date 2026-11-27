@@ -1,6 +1,8 @@
 name: Build and Release PDF
 on:
   push:
+    tags:
+      - 'v*'
 permissions:
   contents: write
 jobs:
@@ -24,11 +26,12 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="v${GITHUB_RUN_NUMBER}.0.0"
+          TAG="${GITHUB_REF_NAME}"
           ASSET="secure_architecture-${TAG}.pdf"
+
           cp secure_architecture.pdf "$ASSET"
+
           gh release create "$TAG" \
             "$ASSET" \
-            --target "$GITHUB_SHA" \
             --title "$TAG" \
-            --notes "Automatically generated from commit ${GITHUB_SHA}."
+            --notes "Release $TAG"
