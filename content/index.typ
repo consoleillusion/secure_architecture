@@ -18,10 +18,23 @@
   fletcher: fletcher,
 )
 
+// Markdown has no native include directive. A marker of the form
+//   <!-- include: snippets/path/to/file.nix -->
+// is replaced at render time with a fenced block whose language is taken from
+// the file extension. Snippet paths are relative to this file (content/).
+#let include-code(match) = {
+  let path = match.captures.at(0)
+  let extension = path.split(".").last()
+  let language = if extension == "conf" { "text" } else { extension }
+  "```" + language + "\n" + read(path).trim() + "\n```"
+}
+
+#let include-pattern = regex("<!-- include: ([^ ]+) -->")
+
 // Markdown headings start at chapter level (Typst level 2), so `#` becomes `==`.
 // Per-file label prefixes avoid collisions between repeated headings.
 #let render-md(path, prefix) = cmarker.render(
-  read(path),
+  read(path).replace(include-pattern, include-code),
   h1-level: 2,
   label-prefix: prefix,
   scope: md-scope,
@@ -81,7 +94,7 @@
     ]
     #block(above: 6.5em)[
       #set text(font: "TeX Gyre Heros", size: 9pt, fill: muted)
-      Work in progress · #datetime.today().display("[year]")
+      Work in progress · Course manuscript
     ]
   ]
 ]
@@ -176,7 +189,7 @@
   #set text(font: "TeX Gyre Heros", size: 22pt, weight: "bold", fill: ink)
   Contents
 ]
-#outline(depth: 2, title: none)
+#outline(depth: 3, title: none)
 #pagebreak()
 
 // ---- Parts and chapters ----
@@ -217,6 +230,7 @@
 #{
   render-md("building_the_stack/secure_networking.md", "networking")
 }
+#pagebreak()
 #{
   render-md("building_the_stack/secure_networking_protocol_categories.md", "protocol-categories")
 }
