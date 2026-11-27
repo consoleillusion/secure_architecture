@@ -22,6 +22,14 @@ Sigstore's `cosign` signs artifacts, Fulcio binds a signing key to an authentica
 
 This chapter owns producing attestation. The host chapter owns verifying it at install time. Both must reference the same artifact digest and the same trust anchor.
 
+## Delivery, GitOps and pipeline security
+
+The declarative host configuration described in the host chapter has to reach the hosts through a path whose integrity can be checked. GitOps is the pattern most suited to this: the desired state lives in version control, changes arrive as reviewed commits, and a controller makes the running state match. Signed commits and enforced tags make the author and the release boundary verifiable; branch protection and required reviewers make review a property of the repository rather than a request sent by email. Flux and Argo CD implement this for Kubernetes, where the important architectural distinction is pull versus push: a pull-based controller runs inside the target environment and fetches the desired state, so the environment does not need an inbound channel from the CI system, while a push-based deployment must carry credentials outward and therefore has a larger credential surface.
+
+The pipeline itself is a production system and must be designed as one. Runners should be ephemeral and least-privilege, because a build that executes untrusted code on a long-lived runner with cached credentials is a foothold in the control plane. Workload identity federation through OIDC gives a job short-lived credentials for the cloud or secret store it needs, replacing long-lived secrets stored in CI variables. Artifact signing closes the loop: the identity that built the artifact signs it, the deployment verifies it, and the provenance is available to the host chapter's install-time checks. Hermetic builds — builds whose result depends only on declared inputs, without ambient network or toolchain state — are what make that claim reproducible rather than aspirational.
+
+Immutable infrastructure patterns follow from the same commitment. A golden image is a base state that is built, verified and never edited in place; hosts are replaced rather than repaired. Blue/green deployment runs two complete versions and switches traffic, which makes rollback a traffic decision rather than a frantic rebuild. Canary deployment exposes a new version to a subset of traffic first, which turns rollout into a measured observation. Each pattern buys a different failure mode, and the choice should follow the service's RTO and the cost of a bad release rather than the fashion of the moment. The host chapter owns the declarative substrate; this chapter owns the path by which a change reaches it.
+
 ## Backstops, and what their use means
 
 A WAF is a backstop: it filters requests at the edge when the application's own boundary handling is incomplete. ModSecurity is the open-source reference. Pipeline gates — SAST, SCA, IaC scanning and container scanning — are backstops of a different kind; pick one of each category rather than accumulating tools.
@@ -42,6 +50,9 @@ CASB, SASE and SD-WAN are often sold as ways to restore control over traffic tha
 | Data access | Parameterised queries; no assembled SQL or unsafe deserialisation |
 | Secrets | Store-fetched with workload identity; repository secrets via `sops` and `age`; no static application credentials |
 | Origin | Signed artifacts, in-toto provenance and a transparency log; verified at deploy and at install |
+| Delivery | Reviewed commits in version control; pull-based GitOps where the platform supports it; signed releases |
+| Pipeline | Ephemeral least-privilege runners, OIDC federation, hermetic builds and artifact signing |
+| Release pattern | Golden images with replacement rather than in-place edits; blue/green or canary chosen from the RTO and rollback cost |
 | Backstops | One gate per category; WAF only where it is an explicit, documented backstop |
 | Cloud responsibility | Documented per service tier; identity and configuration remain the organisation's concern |
 | Resilience | Owned by the resilience chapter; referenced here as a consumer of application state |
