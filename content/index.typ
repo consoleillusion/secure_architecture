@@ -79,27 +79,28 @@
 #page(
   paper: "a4",
   margin: (x: 2.2cm, y: 2.4cm),
+  fill: rgb("#111111"),
   header: none,
   numbering: none,
 )[
-  #align(center)[
-    #block(above: 5.2cm)[
-      #set text(font: "TeX Gyre Heros", size: 33pt, weight: "bold", fill: ink)
+  #place(bottom + left)[
+    #block(width: 82%)[
+      #set text(font: "TeX Gyre Heros", size: 33pt, weight: "bold", fill: rgb("#f8fafc"))
       Secure Architecture
-    ]
-    #block(above: 0.7em)[
-      #set text(font: "TeX Gyre Heros", size: 15pt, fill: accent)
-      An architecture-first security course
-    ]
-    #block(above: 3.2em, width: 82%)[
-      #set text(size: 11pt, fill: muted)
-      For the people who design and operate infrastructure at small-to-medium
-      businesses — where the team that builds the system is the team responsible
-      for keeping it secure.
-    ]
-    #block(above: 6.5em)[
-      #set text(font: "TeX Gyre Heros", size: 9pt, fill: muted)
-      Work in progress · Course manuscript
+      #block(above: 0.7em)[
+        #set text(font: "TeX Gyre Heros", size: 15pt, fill: rgb("#5eead4"))
+        An architecture-first security course
+      ]
+      #block(above: 1.4em)[
+        #set text(font: "TeX Gyre Heros", size: 11pt, fill: rgb("#cbd5e1"))
+        For the people who design and operate infrastructure at small-to-medium
+        businesses — where the team that builds the system is the team responsible
+        for keeping it secure.
+      ]
+      #block(above: 2.4em)[
+        #set text(font: "TeX Gyre Heros", size: 9pt, fill: rgb("#94a3b8"))
+        Work in progress · Course manuscript
+      ]
     ]
   ]
 ]
@@ -118,7 +119,7 @@
   ],
 )
 
-#set text(font: "New Computer Modern", size: 10.5pt, lang: "en")
+#set text(font: "TeX Gyre Heros", size: 10.5pt, lang: "en")
 #set par(justify: true, leading: 0.72em, spacing: 0.85em)
 #set table(stroke: 0.4pt + hairline, inset: (x: 0.5em, y: 0.35em))
 
