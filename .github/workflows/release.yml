@@ -1,0 +1,27 @@
+name: Build and Release PDF
+on:
+  push:
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Typst
+        uses: taiki-e/install-action@v2
+        with:
+          tool: typst@0.15.0
+      - name: Compile PDF
+        run: ./compile.sh
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="build-${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" \
+            secure_architecture.pdf \
+            --target "$GITHUB_SHA" \
+            --title "Build #${GITHUB_RUN_NUMBER}" \
+            --notes "Automatically generated from commit ${GITHUB_SHA}."
