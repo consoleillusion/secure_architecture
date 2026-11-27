@@ -321,9 +321,22 @@
 }
 #pagebreak()
 
+#part-open(
+  "A",
+  "Appendices",
+  [Reference material: the ports appendix appears in Part II; this section collects the glossary and deployment practicals.],
+  [
+    Glossary \
+    Practical: Samba AD DC on NixOS
+  ],
+)
+#{
+  render-md("glossary.md", "glossary")
+}
+
 /*
 The former automation outline is being distributed into the host, application,
 identity and governance chapters. Empty layer 5 and layer 8 stubs were removed;
-layer 6 was folded into the Layers 5–7 section. The ports appendix is rendered
-above. Obsolete Typst drafts live in archive/ and are not sources.
+layer 6 was folded into the Layers 5–7 section. Obsolete Typst drafts live in
+archive/ and are not sources.
 */
