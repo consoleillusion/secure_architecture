@@ -260,6 +260,10 @@
 }
 #pagebreak()
 #{
+  render-md("building_the_stack/secure_networking_ports.md", "ports")
+}
+#pagebreak()
+#{
   render-md("building_the_stack/host_security.md", "host")
 }
 #pagebreak()
@@ -318,13 +322,8 @@
 #pagebreak()
 
 /*
-Excluded drafts: automation.md, secure_networking_layer5.md,
-secure_networking_layer6.md, secure_networking_layer8.md, and
-secure_networking_ports.md. To build one, add a render-md call at the
-appropriate point above. For example:
-
-#{
-  render-md("building_the_stack/automation.md", "automation")
-}
-#pagebreak()
+The former automation outline is being distributed into the host, application,
+identity and governance chapters. Empty layer 5 and layer 8 stubs were removed;
+layer 6 was folded into the Layers 5–7 section. The ports appendix is rendered
+above. Obsolete Typst drafts live in archive/ and are not sources.
 */

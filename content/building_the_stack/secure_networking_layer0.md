@@ -36,9 +36,9 @@ Every signal transmitted radiates energy beyond the intended path. This is the s
 
 Copper cables emit weak electromagnetic fields that can be picked up with sensitive equipment at surprising distances, the TEMPEST problem, studied and classified by governments since the 1950s. The signal radiating from a poorly shielded Ethernet cable or a video display is, physically, a broadcast; it can be captured by anyone with the right receiver in range.
 
-WiFi and cellular signals are broadcasts by design. Every transmission from an access point fills a volume of space with energy that carries the signal, and anyone within that volume, with an appropriate antenna and receiver, can capture it. There is no physical defence against this capture; the only defence is that the signal, once captured and decoded into symbols by the attacker's equipment, is cryptographically protected by a layer above.
+Wi-Fi and cellular signals are broadcasts by design. Every transmission fills a volume of space with energy that carries the signal, and anyone within that volume with an appropriate antenna can capture it. Shielding, lower transmit power and directional antennas reduce the volume, but cannot eliminate it; the signal must therefore be cryptographically protected by a layer above.
 
-Fibre is the best of the three in this respect. Light remains inside the glass core. Passive interception requires splicing into the fibre itself, which introduces a detectable disturbance in the signal. Physical access to the cable run is the attack surface.
+Fibre is the best of the three in this respect. Light remains inside the glass core under normal conditions. Interception requires physical access to the cable and a bend, tap or splice, which can introduce a detectable disturbance. Physical access to the cable run is the attack surface.
 
 This yields a rough interception-surface ranking:
 
