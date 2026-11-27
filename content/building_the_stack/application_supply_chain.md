@@ -64,4 +64,11 @@ CASB, SASE and SD-WAN are often sold as ways to restore control over traffic tha
 | Cloud responsibility | Documented per service tier; identity and configuration remain the organisation's concern |
 | Resilience | Owned by the resilience chapter; referenced here as a consumer of application state |
 
+## Architectural rules
+
+- Every input shall undergo canonicalisation before validation.
+- Every output shall undergo encoding for its destination context.
+- Every application secret shall come from an authenticated store.
+- Every release shall carry verifiable provenance.
+
 **Architectural question a graduate answers:** **given this application, what are its trust boundaries, where do its secrets live, how is its origin established, what pipeline gates exist, and where does a WAF fit if one is needed?**

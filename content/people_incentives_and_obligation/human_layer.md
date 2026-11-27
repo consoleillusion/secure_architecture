@@ -1,9 +1,9 @@
 ---
-cnl: e-prime
+cnl: plain-language
 cnl-version: 1
 cnl-scope: narrative
 lexicon: core-v1
-lint: strict
+lint: light
 ---
 # The Human Layer: Behaviour, Incentives, and the Architecture That Survives Both
 

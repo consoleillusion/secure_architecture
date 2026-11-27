@@ -56,6 +56,13 @@ Third-party risk is handled with the same preference for evidence over assurance
 | Policy | Expressed as code and enforced by the pipeline; SCAP/OpenSCAP where standard evidence is required |
 | Third parties | SBOMs and verified signatures over questionnaires and assurances |
 
+## Architectural rules
+
+- Every load-bearing control shall be architectural.
+- Every policy shall be expressible as executable code.
+- Every regulated data class shall have a named jurisdiction.
+- Every audit artefact shall derive from system state.
+
 **Architectural question a graduate answers:** **what does the business have to answer for in law, what architectural choices reduce that surface, and what controls can you produce under audit without operational theatre?**
 
 [^calea]: Communications Assistance for Law Enforcement Act, 1994.

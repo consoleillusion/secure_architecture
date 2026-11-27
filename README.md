@@ -101,9 +101,27 @@ same commit produces the same metadata. The Markdown chapters are rendered into
 the PDF at build time; there is no separate site output. The PDF remains the
 canonical artifact.
 
+## Controlled languages
+
+Every chapter declares a controlled language in YAML frontmatter. Introduction,
+Adversary Awareness and the Human Layer use plain language; networking, host,
+observability, glossary and the practical use Simplified Technical English;
+Foundations, Identity, Data Security and Resilience use ACE for normative rules;
+Application and Governance use SBVR Structured English. See
+`cnl/README.md` for the full mapping and enforcement levels. Check declarations
+with:
+
+```sh
+python3 tools/lint_cnl.py
+```
+
 ## Contributing
 
-- Write Markdown. Chapter files use `# Chapter title` as their first line.
+- Write Markdown. Every chapter begins with YAML frontmatter declaring its
+  controlled language; see `cnl/README.md`. The chapter title follows on the
+  first line after the closing `---`.
+- Write in the chapter's declared CNL. ACE and SBVR chapters keep their
+  normative statements under an **Architectural rules** heading using `shall`.
   `content/index.typ` renders with `h1-level: 2`, so `#`, `##`, `###` become the
   book's chapter, section and subsection levels.
 - Page breaks are controlled in `content/index.typ`, not in chapter files. To

@@ -53,4 +53,11 @@ Recovery is a consumer of observability, not a parallel stack. The alert that st
 | DR pattern | Selected from the RTO: hot for minutes, warm or pilot light for hours, cold for a day or more |
 | Evidence | Backup results and recovery events emitted to the shared observability pipeline |
 
+## Architectural rules
+
+- Every system shall have a declared RPO and RTO.
+- Every backup shall include an immutable copy.
+- Every restore shall be tested before the backup counts as valid.
+- Every recovery shall follow the documented dependency order.
+
 **Architectural question a graduate answers:** **what is the RPO/RTO for each system, what backup topology achieves it, when was it last restored successfully, and in what order does recovery proceed?**

@@ -612,5 +612,13 @@ The decisions developed above are collected here as a checklist. Each is argued 
 
 The architecture that emerges is the substrate the rest of the course assumes. It is not glamorous and does not demonstrate well to a board. It is the difference between an organisation that can answer "who has access to what, and why, and is that still the right answer" and one that cannot. The investment is repaid every time a compromise is blocked at the credential layer, every time a leaver's access is revoked everywhere it matters, and every time an auditor or incident responder asks a question and the answer is in the logs.
 
+
+## Architectural rules
+
+- Every access shall be mediated by an authenticated identity.
+- Every credential shall be scoped to one purpose and short-lived.
+- No component shall infer trust from network location.
+- Every service shall verify the caller before it acts.
+
 The appendix that follows develops one concrete pattern — a Samba AD DC on NixOS with joined file servers — against which these decisions can be examined in full.
 

@@ -52,7 +52,14 @@ If the guarantee is this strong, the obvious question is why it is not the defau
 
 **Loss of operator control.** An operator who cannot read customer data cannot scan it for abuse, search it to improve the product, show it to support staff, or hand it to advertisers, data brokers and analytics partners. Business models that depend on access to customer data are incompatible with architectures in which the customer holds the only key. The encryption is declined for commercial reasons, not technical ones.
 
-**Obligations and legal constraints.** In some jurisdictions providers can be compelled to produce customer data under lawful process, and an architecture that renders the provider incapable of producing plaintext conflicts with that obligation. The regimes differ by country, sector and data class, and some impose restrictions on encryption itself. The architect in a regulated environment must establish which regime applies and take local advice rather than assuming a universal rule.[^lawful-access]
+**Obligations and legal constraints.** In some jurisdictions providers can be compelled to produce customer data under lawful process, and an architecture that renders the provider incapable of producing plaintext conflicts with that obligation. The regimes differ by country, sector and data class, and some impose restrictions on encryption itself. The architect in a regulated environment must establish which regime applies and take local advice rather than assuming a universal rule.## Architectural rules
+
+- Every data class shall have a named boundary.
+- Every key shall have a custody owner and a rotation path.
+- Every stored secret shall remain outside the application image.
+- Every cryptographic failure shall terminate the operation.
+
+[^lawful-access]
 
 **Availability.** If the only party holding the key loses it, the data is unrecoverable. Forgotten passphrases, lost devices and failed backups become permanent loss rather than support tickets. In an architecture where the key lives outside the processing system, that system cannot help, because helping would require holding the key the architecture exists to keep out of its reach.
 

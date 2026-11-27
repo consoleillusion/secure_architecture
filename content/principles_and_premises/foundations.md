@@ -9,7 +9,14 @@ lint: strict
 
 ## Goals
 
-The goal of security is to enable the organisation to meet its mission and business objectives while exercising due care over the risks to itself, its partners and its customers.[^nist800-33] A more operational formulation is Howard's: reduce the probability of material impact from a cyber event over a three-year horizon.[^howard2023] Neither formulation is a first principle. Both are goals derived from a more general human interest in prosperity, safety and the ability to pursue one's purposes.
+The goal of security is to enable the organisation to meet its mission and business objectives while exercising due care over the risks to itself, its partners and its customers.## Architectural rules
+
+- Every component shall default to denial.
+- Every access shall pass complete mediation.
+- Every trusted computing base shall remain minimal.
+- Every exception shall carry an owner and an expiry.
+
+[^nist800-33] A more operational formulation is Howard's: reduce the probability of material impact from a cyber event over a three-year horizon.[^howard2023] Neither formulation is a first principle. Both are goals derived from a more general human interest in prosperity, safety and the ability to pursue one's purposes.
 
 | **Property** | **Source** |
 | --- | --- |
