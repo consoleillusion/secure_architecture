@@ -327,7 +327,8 @@
   [Reference material: the ports appendix appears in Part II; this section collects the glossary and deployment practicals.],
   [
     Glossary \
-    Practical: Samba AD DC on NixOS
+    Practical: Samba AD DC on NixOS \
+    Bibliography
   ],
 )
 #{
@@ -337,10 +338,14 @@
 #{
   render-md("practicals/samba_ad_nixos.md", "samba-practical")
 }
+#pagebreak()
+#{
+  render-md("bibliography.md", "bibliography")
+}
 
 /*
-The former automation outline is being distributed into the host, application,
-identity and governance chapters. Empty layer 5 and layer 8 stubs were removed;
-layer 6 was folded into the Layers 5–7 section. Obsolete Typst drafts live in
-archive/ and are not sources.
+The former automation outline was distributed into the host, application and
+governance chapters and the original outline is kept in archive/. Empty layer 5
+and layer 8 stubs were removed; layer 6 was folded into the Layers 5–7 section.
+Obsolete Typst drafts live in archive/ and are not sources.
 */
