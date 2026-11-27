@@ -80,13 +80,13 @@
 
 #page(
   paper: "a4",
-  margin: (x: 2.2cm, top: 2.4cm, bottom: 0.6cm),
+  margin: (x: 2.2cm, top: 2.4cm, bottom: 2.4cm),
   fill: rgb("#111111"),
   header: none,
   numbering: none,
 )[
   #place(bottom + left)[
-    #set text(font: body-font, size: 40pt, weight: "bold", fill: paper)
+    #set text(font: body-font, size: 30pt, weight: "bold", fill: paper)
     Secure Architecture
   ]
 ]
