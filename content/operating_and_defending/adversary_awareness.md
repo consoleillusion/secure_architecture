@@ -1,52 +1,10 @@
-#  Adversary Awareness
+# Adversary Awareness
 
 **Goal:** enough understanding of offensive methodology, malware behaviour, and defensive consumption to make architectural decisions that deny adversaries and expose the right detection surfaces. Not to operate the function.
 
-## Offensive methodology (awareness)
-- What a pentest is, what a pentest report looks like
-- Authorisation, scoping, rules of engagement
-- MITRE ATT&CK as a shared vocabulary for adversary behaviour
-- Asset discovery as defender visibility
+## In this chapter
 
-## What adversaries do, mapped to architectural answers
-- Reconnaissance → reduce attack surface
-- Exploitation → minimise TCB, default deny
-- C2 and lateral movement → egress control, segmentation
-- Persistence → host attestation, immutability
-- Exfiltration → data classification and egress boundaries
-
-## Malware behaviour (awareness)
-- What malware needs: persistence, privilege, C2, exfiltration
-- Packers, crypters, obfuscation, that they exist and why
-- Sandboxes exist (CAPE, Cuckoo), categorical knowledge only
-- ML detection: approach, not pipeline, briefly cover dataset, features, evaluation
-- Android case study at architectural level: APK structure, permission model, feature engineering
-
-## Detection surfaces consumed from the observability pipeline
-- SIEM categories: Elastic, Wazuh, Security Onion, consumers of the D7 pipeline
-- Network detection: Suricata, Zeek, require tap or span placement (a D2 design input)
-- Host detection: Wazuh, osquery, Falco, require agent deployment (a D4 design input)
-- Honeynets as zero-trust telemetry, intentional-exposure design pattern
-
-## Incident response architecture
-- SANS PICERL as the lifecycle the architecture must accommodate
-- Evidence preservation as an architectural property, what's captured, where, immutably
-- Runbooks consume the same telemetry operations consumes
-
-## Tooling anchors (source obligations)
-- Huntsman: what it does and what its existence tells an architect
-- nmap, masscan: what they find and what that tells an architect
-
-**Architectural question a graduate answers:** **what would a pentester find, what does malware need to succeed, what detection surfaces has the architecture exposed, and what architectural decisions make all three harder?**
-
-The goal is enough understanding of offensive methodology, malware
-behaviour, and defender consumption to make architectural decisions
-that deny adversaries the conditions they need and expose the
-detection surfaces that catch them when denial fails. Not to operate
-the offensive function, not to author intelligence, not to run a SOC.
-The architect's task is to know the shape of the adversary well enough
-to design a system whose default behaviour resists, instruments, and
-contains intrusion.
+This chapter uses the intrusion kill chain as the spine for thinking about adversary behaviour and the architectural answers to it. Malware behaviour, detection surfaces and incident-response procedures are treated in the observability and resilience chapters; offensive tooling appears here only where it reveals something about the architecture. The question is not how to operate a security function but how to design a system whose default behaviour resists, instruments and contains intrusion.
 
 The defining insight of this chapter is that adversaries do not act
 randomly. An intrusion is a sequence of dependent steps, each of which
@@ -266,7 +224,7 @@ puts the artefact in the right place; exploitation makes it run.
 
 The architectural question at this phase is **what is the trusted
 computing base of the targeted system, and how small is it?** A
-Saltzer-Schroeder principle reasserts itself here: the components
+principle from the Foundations chapter reasserts itself here: minimize the trusted computing base. The components
 whose compromise compromises everything must be as few and as audited
 as possible. An exploitable flaw in a complex office suite is
 catastrophic if the office suite runs with the user's full authority,
@@ -429,8 +387,7 @@ The chain's value to the defender does not come from any one of its
 phases in isolation. It comes from the combination of two facts. The
 first is that the adversary must traverse all seven phases for the
 intrusion to succeed, and a failure at any phase ends the campaign.
-The second is that the cost to the adversary of progressing through
-the chain is monotonically increasing: reconnaissance is cheap and
+The second is that, in the canonical external-delivery case, the adversary's investment generally increases as the chain progresses: reconnaissance is cheap and
 abundantly available, weaponisation requires more investment, delivery
 exposes infrastructure, exploitation requires a working capability,
 installation produces durable evidence, C2 reveals patterns, and
@@ -458,8 +415,8 @@ mechanism that realises that answer.
 The matrix has a second use. It exposes where the architecture is
 weak. A column with no entries means a phase the organisation does
 nothing about, and a phase the organisation does nothing about is a
-phase the adversary will choose to operate within. Most organisations,
-at the time the kill chain was published, had heavy investment in
+phase the adversary will choose to operate within. Most organisations
+concentrate effort on
 detect-at-actions-on-objectives and deny-at-delivery, both relatively
 late phases, and almost no investment at reconnaissance or
 weaponisation, where the marginal cost of action is small and the
@@ -514,7 +471,7 @@ adversary attribution or capability characterisation. It says
 "reconnaissance happened" without saying who, with what tools,
 sharing what infrastructure with what other campaigns. The **Diamond
 Model of Intrusion Analysis**, published by Caltagirone, Pendergast,
-and Betz a year after Hutchins, fills this gap with a different
+and Betz in 2013, fills this gap with a different
 abstraction: every intrusion event is a vertex of a diamond whose
 corners are adversary, capability, infrastructure, and victim, and
 analysis proceeds by pivoting from a known corner to discover others.
@@ -551,60 +508,19 @@ and what the architectural prerequisites of its operation are.
 
 ## What the kill chain demands of an architecture
 
-The chapter to this point has used the kill chain as the spine of the
-adversary's behaviour. The architecture-first reading of the chain is
-that each phase has an architectural answer that must be present
-**before** the chain begins, because none of the answers can be
-retrofitted under intrusion. The reading is summarised here in the
-language of the rest of the course.
+Each phase was examined above with its architectural question and detection surface. The table collects the answers as an index; it does not restate the arguments.
 
-Reconnaissance is answered by **attack surface reduction**: the only
-services on the public address space are the ones whose business
-function requires public reachability, and the rest live behind the
-mesh VPN or the identity-aware proxy. The DNS, mail, and web
-properties publish what the organisation has chosen to publish, and
-nothing more. Asset discovery, run by the defender, is at least as
-good as the adversary's.
+| **Phase** | **Architectural answer** | **Detection surface and evidence** |
+| --- | --- | --- |
+| Reconnaissance | Attack surface reduction; only publicly necessary services are public | Published DNS, mail and web inventory; the defender's own asset discovery |
+| Weaponisation | An intelligence pipeline with a destination in the detection layer | Indicator ingestion and the path from feed to detection rule |
+| Delivery | Default-deny on each channel: mail, web, DNS, removable media, build and install | Gateway, proxy, DNS and supply-chain attestation logs |
+| Exploitation | Trusted computing base minimisation: hardening, MAC, sandboxing, least privilege | Host telemetry and exploitable-surface inventory |
+| Installation | Host immutability and attestation: declarative state, signed binaries, measured boot | File-integrity findings on an enumerated path set; TPM-bound measurements |
+| Command and control | Default-deny egress with proxy and DNS policy | Flow records from taps or spans; correlation with host telemetry |
+| Actions on objectives | Segmentation, identity, classification and resilience | Identity decisions, classified egress events, immutable tested backups |
 
-Weaponisation is answered by **the intelligence pipeline**: the
-architecture has a place to ingest indicators from external feeds,
-internal incident response, and partner sharing, and a path from those
-indicators to the detection layer that consumes them. Without the
-pipeline, intelligence about adversary tooling is information without
-a destination.
-
-Delivery is answered by **channel-by-channel default-deny**: email
-attachment and link policy enforced at the gateway; egress proxy and
-DNS filtering at the perimeter; supply-chain attestation in the
-build and install paths; removable-media control at the host. Each
-channel is named, each channel has an owner in the architecture, and
-each channel has a default policy that is restrictive.
-
-Exploitation is answered by **trusted computing base minimisation**:
-host hardening, mandatory access control, application sandboxing,
-declarative system definition, least privilege at process and user
-level. The architecture cannot prevent a vulnerability from existing,
-but it controls the authority a vulnerability's exploitation can
-yield.
-
-Installation is answered by **host immutability and attestation**:
-declarative configuration, signed binaries, measured boot, TPM-bound
-keys, file integrity monitoring on a small enumerated set of paths,
-and host telemetry feeding the SIEM. The architecture decides what
-counts as legitimate persistent state, and everything else is, by
-design, observable as deviation.
-
-Command and control is answered by **default-deny egress**: outbound
-traffic is enumerated, not assumed; the egress proxy, DNS filter, and
-firewall enforce destination policy at the appropriate layers; tap
-or span placement gives the network detection layer something to
-read; the SIEM correlates the resulting signal with host telemetry.
-
-Actions on objectives are answered by **segmentation, identity, data
-classification, and resilience**: lateral movement is bounded by
-network and identity boundaries, exfiltration crosses egress points
-that classify and inspect, destruction is reversible because backups
-are immutable, off-line, and tested.
+The phases are dependent, so a deny mechanism at an early phase removes the need to detect every later one; a detection surface at a later phase is the evidence that an earlier denial failed.
 
 ## Architectural question a graduate answers
 
@@ -625,4 +541,4 @@ above. The kill chain is the spine on which they hang.
 [^11]: Hutchins, E.M., Cloppert, M.J., Amin, R.M., 2010.
 **Intelligence-Driven Computer Network Defense Informed by Analysis
 of Adversary Campaigns and Intrusion Kill Chains.** Lockheed
-Martin Corporation. (Reference 11 in the main bibliography.)
+Martin Corporation.
