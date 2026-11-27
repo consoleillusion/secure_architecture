@@ -10,7 +10,8 @@
 #let hairline = rgb("#cbd5e1")
 #let paper-tint = rgb("#f8fafc")
 #let paper = rgb("#fafafa")
-#let body-font = "Liberation Sans"
+// Typst exposes this family with its optical-size suffix.
+#let body-font = "DM Sans 9pt"
 
 // cmarker scope for the few Markdown files that retain Typst diagrams.
 #let md-scope = (
