@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 ## Layer 2 - The Data Link Layer
 
 ### What Layer 2 is for

@@ -1,3 +1,11 @@
+---
+cnl: plain-language
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+vocabulary: mitre-attack
+---
 # Adversary Awareness
 
 **Goal:** enough understanding of offensive methodology, malware behaviour, and defensive consumption to make architectural decisions that deny adversaries and expose the right detection surfaces. Not to operate the function.

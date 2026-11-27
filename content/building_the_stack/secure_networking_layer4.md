@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 ## Layer 4 - The Transport Layer
 
 ### 1. Position in the Stack

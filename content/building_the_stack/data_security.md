@@ -1,3 +1,11 @@
+---
+cnl: ace
+cnl-version: 1
+cnl-scope: hybrid
+lexicon: core-v1
+lint: strict
+secondary-cnl: ste
+---
 # Cryptography & Data Security
 
 **Goal:** To make confidentiality a property of key ownership rather than of network location or storage state, and to make every point where plaintext exists an explicit, justified decision.

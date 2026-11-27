@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 # Practical: Samba AD DC on NixOS for cross-platform directory and file services
 
 The remainder of the chapter develops one architectural pattern in

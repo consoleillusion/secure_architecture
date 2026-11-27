@@ -31,14 +31,19 @@
 
 #let include-pattern = regex("<!-- include: ([^ ]+) -->")
 
-// Markdown headings start at chapter level (Typst level 2), so `#` becomes `==`.
-// Per-file label prefixes avoid collisions between repeated headings.
-#let render-md(path, prefix) = cmarker.render(
-  read(path).replace(include-pattern, include-code),
-  h1-level: 2,
-  label-prefix: prefix,
-  scope: md-scope,
-)
+// Each chapter declares its controlled language in YAML frontmatter. cmarker
+// parses the block into a dictionary and removes it from the rendered body.
+// The metadata is intentionally not printed: it is consumed by the CNL linter.
+#let render-md(path, prefix) = {
+  let (_meta, body) = cmarker.render-with-metadata(
+    read(path).replace(include-pattern, include-code),
+    h1-level: 2,
+    label-prefix: prefix,
+    scope: md-scope,
+    metadata-block: "frontmatter-yaml",
+  )
+  body
+}
 
 // A part opener: roman numeral, title, blurb, and the chapters it contains.
 #let part-open(num, title, blurb, chapters) = {

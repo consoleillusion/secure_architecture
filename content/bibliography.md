@@ -1,3 +1,10 @@
+---
+cnl: plain-language
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 # Bibliography
 
 This bibliography collects the publications, standards and project documentation cited in footnotes throughout the book. A footnote gives a short reference; the full entry is here. Where a work appears in more than one chapter it has one entry.

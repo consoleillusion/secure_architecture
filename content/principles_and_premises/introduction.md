@@ -1,3 +1,10 @@
+---
+cnl: plain-language
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 # Introduction
 
 This course is written for the IT teams that architect and operate infrastructure at small-to-medium businesses, organisations of roughly five to one hundred people, below the scale at which an organisation needs its own autonomous system or dedicated security operations function, but above the scale at which ad-hoc configuration and accumulated tooling remains defensible. At this size, the team responsible for infrastructure is the same team responsible for its security. There is no second department to catch mistakes. The architecture itself has to do the work.

@@ -1,3 +1,10 @@
+---
+cnl: e-prime
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: strict
+---
 # The Human Layer: Behaviour, Incentives, and the Architecture That Survives Both
 
 ## Opening

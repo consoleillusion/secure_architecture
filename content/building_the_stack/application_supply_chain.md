@@ -1,3 +1,10 @@
+---
+cnl: sbvr
+cnl-version: 1
+cnl-scope: normative
+lexicon: core-v1
+lint: strict
+---
 # Application and Software Supply Chain Security
 
 **Goal:** students ship software whose architecture answers where trust boundaries, secrets and origin live.

@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 ## Layers 5–7 — Session, Presentation and Application
 
 ### Why the upper three layers collapse

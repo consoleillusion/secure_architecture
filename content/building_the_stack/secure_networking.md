@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 # Secure Networking
 
 > In this connection it might be worth-while to point out that the purpose of abstracting is not to be vague, but to create a new semantic level in which one can be absolutely precise.

@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 # Glossary
 
 Terms used across the course, collected in one place. Definitions describe how the words are used here; where a term has a narrower standard definition, that is noted.

@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 ## Layer 3 - The Network Layer
 
 ### What Layer 3 is for

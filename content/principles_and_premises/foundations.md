@@ -1,3 +1,10 @@
+---
+cnl: ace
+cnl-version: 1
+cnl-scope: normative
+lexicon: core-v1
+lint: strict
+---
 # Foundations
 
 ## Goals

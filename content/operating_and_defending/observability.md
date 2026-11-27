@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 # Observability
 
 **Goal:** the architecture decides at design time what every component emits, through what pipeline, with what retention, integrity and access control. Operations, defence and compliance are consumers of that output; they do not get to rebuild it after the fact.

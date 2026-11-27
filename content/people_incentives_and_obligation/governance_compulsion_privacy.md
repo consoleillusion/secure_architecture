@@ -1,3 +1,10 @@
+---
+cnl: sbvr
+cnl-version: 1
+cnl-scope: normative
+lexicon: core-v1
+lint: strict
+---
 # Governance, Compulsion, Privacy
 
 **Goal:** the architecture answers correctly to law, audit and privacy regimes without installing compliance theatre.

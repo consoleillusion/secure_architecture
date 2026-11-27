@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 # Host and Endpoint Security
 
 **Goal:** build verifiable, reproducible, attestable hosts.

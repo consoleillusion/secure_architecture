@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 ## Appendix: Ports and Protocol Numbers
 
 Port numbers are useful shorthand, not security controls. A default-deny policy still has to decide which service on which host is allowed to speak to which peer. This appendix collects the numbers used in the course so that firewall rules and captures can be read without guessing.

@@ -1,3 +1,10 @@
+---
+cnl: ste
+cnl-version: 1
+cnl-scope: narrative
+lexicon: core-v1
+lint: light
+---
 ## Layer 1 - Physical Layer
 
 Layer 0 gave us a medium: something through which energy can travel. Layer 1 is the standard that says how to use that medium to carry bits. The word _bit_ is doing work here. Before Layer 1 there are no bits. There are voltages on a wire, there is light intensity inside a fibre, there is an electromagnetic wave with some amplitude and phase. Layer 1 is the agreement between two endpoints about how to interpret one of those continuous physical signals as a discrete sequence of ones and zeros. Above Layer 1, the rest of the stack is entitled to assume that bits arrive faithfully. Below Layer 1, nothing in the stack has any reason to believe anything.

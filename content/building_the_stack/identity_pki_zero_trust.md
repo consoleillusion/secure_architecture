@@ -1,3 +1,11 @@
+---
+cnl: ace
+cnl-version: 1
+cnl-scope: hybrid
+lexicon: core-v1
+lint: strict
+secondary-cnl: ste
+---
 # Identity, PKI and Zero Trust
 
 **Goal:** To make identity the substrate every other layer authenticates against — centralised, operated as code, recoverable and cross-platform by construction.

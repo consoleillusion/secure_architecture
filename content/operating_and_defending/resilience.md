@@ -1,3 +1,11 @@
+---
+cnl: ace
+cnl-version: 1
+cnl-scope: hybrid
+lexicon: core-v1
+lint: strict
+secondary-cnl: ste
+---
 # Resilience
 
 **Goal:** the architecture answers correctly to "how fast, from what, to what state."
