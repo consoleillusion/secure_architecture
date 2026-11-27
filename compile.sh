@@ -12,3 +12,15 @@ epoch="$(git -C "$root" log -1 --format=%ct -- content 2>/dev/null || printf '0'
 
 typst compile "$root/content/index.typ" "$out" --creation-timestamp "$epoch"
 printf 'Built %s\n' "$out"
+
+# The repository README is the introduction chapter. Strip the CNL frontmatter
+# so the generated file reads as ordinary Markdown outside the book build.
+intro="$root/content/principles_and_premises/introduction.md"
+tmp="$(mktemp)"
+awk '
+  NR == 1 && $0 == "---" { skip = 1; next }
+  skip && $0 == "---" { skip = 0; next }
+  !skip { print }
+' "$intro" > "$tmp"
+mv "$tmp" "$root/README.md"
+printf 'Wrote %s\n' "$root/README.md"

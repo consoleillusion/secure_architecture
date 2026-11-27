@@ -1,143 +1,103 @@
-# Secure Architecture
+# Introduction
 
-> **Work in progress.** This is a developing course manuscript, not a finished
-> book. The chapters are written as continuous prose, but the text continues to
-> be revised and the PDF snapshot may lag behind the sources.
+This course is written for the IT teams that architect and operate infrastructure at small-to-medium businesses, organisations of roughly five to one hundred people, below the scale at which an organisation needs its own autonomous system or dedicated security operations function, but above the scale at which ad-hoc configuration and accumulated tooling remains defensible. At this size, the team responsible for infrastructure is the same team responsible for its security. There is no second department to catch mistakes. The architecture itself has to do the work.
 
-Secure Architecture is an architecture-first security course written for the IT
-teams that design and operate infrastructure at small-to-medium businesses
-(roughly 5–100 people) — organisations large enough that ad-hoc configuration
-is no longer defensible, but too small to have a dedicated security department
-or SOC. The people who build the systems are the people responsible for their
-security, so the architecture itself has to carry the weight.
+Most cybersecurity practice treats security as something applied to a system after it has been built. A business stands up its infrastructure, servers, networks, endpoints, applications, and then later adds firewalls, anti-virus, monitoring platforms, and policies on top. The security industry has organised itself around this pattern, producing an enormous market of products that compensate for problems the underlying architecture created in the first place. This course rejects that pattern. Security is a property of a system, not a product added to one, and any architecture that requires a perpetual stream of patches, alerts, and vendor tools to remain defensible is an architecture that was not designed correctly.
 
-The central argument: security is a property of how a system is built, not a
-product bolted on afterwards. A segmented network does not need a product to
-stop lateral movement; a host built from a declarative configuration cannot
-silently drift; short-lived, scoped credentials remove the long-lived secrets
-an attacker would steal. Zero trust is presented here not as a product category
-but as the consistent application of long-standing principles — fail-safe
-defaults, complete mediation, least privilege, explicit trust boundaries, and
-minimising the trusted computing base — to every component.
+An architecture-first approach means that every component is chosen, configured, and connected with security consequences accounted for from the beginning. The first question is not "what product do we buy to secure this?" but "how do we build this such that security follows naturally from the structure?" The difference is substantial. A properly segmented network does not need a product to prevent lateral movement. A host built from a declarative configuration does not need an endpoint protection platform to detect drift: in the paths the configuration describes, drift is structurally impossible. An identity system that issues short-lived, scoped credentials does not need an expensive anomaly-detection layer to catch stolen long-lived credentials, because there are no long-lived credentials to steal.
 
-## Status
+## Consistency with established principles
 
-- All planned chapters are written as prose: principles, networking layers,
-  host and application security, identity/PKI, data security, observability,
-  adversary awareness, resilience, the human layer and governance.
-- The ports reference is rendered in Part II. The glossary, the Samba AD DC
-  practical and the book-wide bibliography are rendered as appendices.
-- The Samba practical's configuration and shell code live as real `.nix` and
-  `.sh` files under `content/snippets/samba/` and are included at render time.
-- Old Typst drafts and the original automation outline are kept in `archive/`.
-  They are historical sources and are not part of the build.
-- `secure_architecture.pdf` is a generated snapshot. Regenerate it after
-  editing sources; do not edit it directly.
+The course does not invent a new security framework. It uses the principles set out in the Foundations chapter — the Saltzer–Schroeder primitives and their modern corollaries — as design constraints rather than slogans.[^saltzer] What is unusual is not the list but the insistence on applying it. The industry frequently cites least privilege while shipping systems in which applications run as root, services have unrestricted network access, and service accounts hold credentials good for months. Here, if a component does not need a capability, the architecture does not give it that capability. The same test applies to every principle: each must be visible in the constructed system, not merely in a policy document.
 
-## Source layout
+## Zero trust as consistent application
 
-```
-./
-├── compile.sh                  # deterministic PDF build; writes the PDF at the root
-├── content/
-│   ├── index.typ               # root document; render order = chapter order
-│   ├── bibliography.md         # book-wide bibliography
-│   ├── glossary.md
-│   ├── principles_and_premises/
-│   │   ├── introduction.md
-│   │   └── foundations.md
-│   ├── building_the_stack/
-│   │   ├── secure_networking.md
-│   │   ├── secure_networking_protocol_categories.md
-│   │   ├── secure_networking_layer0.md … secure_networking_layer7.md
-│   │   ├── secure_networking_ports.md
-│   │   ├── host_security.md
-│   │   ├── identity_pki_zero_trust.md
-│   │   ├── data_security.md
-│   │   └── application_supply_chain.md
-│   ├── operating_and_defending/
-│   │   ├── observability.md
-│   │   ├── adversary_awareness.md
-│   │   └── resilience.md
-│   ├── people_incentives_and_obligation/
-│   │   ├── human_layer.md
-│   │   └── governance_compulsion_privacy.md
-│   ├── practicals/
-│   │   └── samba_ad_nixos.md
-│   └── snippets/samba/         # included .nix and .sh code
-├── archive/                    # excluded drafts and outlines
-└── secure_architecture.pdf     # generated snapshot
-```
+The course adopts a zero-trust posture: no implicit trust based on network location, no credentials that remain valid indefinitely, every access verified, every component explicit about what it trusts and why. This is worth naming because the industry talks about zero trust frequently and confusingly, often treating it as a product category or a new invention. As the Foundations chapter argues, zero trust is the consistent application of the principles already stated, not a separate framework. Where conventional architectures apply them selectively, at the perimeter and to chosen users or services, this course applies them everywhere. Anything less leaves soft interior boundaries for an attacker to find.
 
-`content/index.typ` is the only Typst source. It renders the Markdown files
-with cmarker; the order of its `render-md` calls is the chapter order. Each part
-directory is flat: one `chapter_name.md` per chapter. No source file outside
-`content/` is rendered.
+## Vendor relationships and the Parkerian Control property
 
-## Building
+The Parkerian Hexad extends the familiar CIA triad with three additional properties, one of which is **control**, the capacity to determine what happens to a system or to data.[^parker-hexad] Control is a spectrum rather than a binary. When an organisation hands its infrastructure to a vendor in the form of a closed-source product, a managed service, or a cloud platform with opaque internal behaviour, it trades some portion of control for convenience. This is not always wrong, sometimes the trade is worth it, but it is always a security-relevant decision, and it is usually made without acknowledging that a property of security has been reduced.
 
-Requirements:
+The course treats vendor dependence as a loss of control that must be justified, not assumed. Where a component can be operated in-house on open-source software that is inspectable, reproducible, and under the organisation's own configuration management, that is the default. Where a vendor is used, the course insists on high standards for that vendor's trustworthiness: auditable behaviour, meaningful transparency (including software bill of materials), reproducible builds where possible, and clear contractual and architectural limits on what the vendor's software can do on the organisation's systems. A vendor whose software cannot meet these standards is a vendor whose presence in the trust path cannot be justified, regardless of market position or marketing claims.
 
-- [Typst](https://typst.app/) CLI (tested with 0.15.x).
-- The `@preview` packages `cmarker` 0.1.10 and `fletcher` 0.5.8. Network access
-  is needed on the first build if they are not already in the Typst package
-  cache.
+## Simplicity and the threat of complexity
 
-From the project root:
+Economy of mechanism, the principle that protection systems should be simple enough to be audited by a single person, has a practical consequence the industry routinely ignores: **too many tools is itself a threat**. Every additional component in an infrastructure is code that can have bugs, a credential that can be stolen, a supply-chain dependency that can be compromised, and a surface that must be monitored. When an organisation deploys twenty-seven security products to defend against threats that a correctly-designed ten-product stack would have prevented by construction, the twenty-seven-product stack is not more secure than the ten-product stack. It is less secure. It has more code paths, more trust relationships, more failure modes, and more opportunities for the attacker to find a seam.
 
-```sh
-./compile.sh                       # writes ./secure_architecture.pdf
-./compile.sh /tmp/book.pdf         # optional custom output path
-```
+The SolarWinds compromise in 2020 is the canonical example. A network management platform installed inside thousands of organisations, trusted with privileged access to infrastructure, was compromised at the build stage; many organisations running the affected product then inherited a foothold they had not created.[^solarwinds] The lesson is not that network management is bad; it is that every tool is a trust decision, and the aggregate trust surface of a tool-heavy architecture can exceed the trust surface of the systems the tools are supposed to defend. This course emphasises **simple primitives composed carefully** over complex tooling accumulated over time. Layering is still used, defence in depth has genuine value, but each layer must justify its presence, and a layer that adds more attack surface than it removes has failed the principle.
 
-Or compile directly:
+One concrete consequence of this stance, worth stating early because it recurs throughout the course, is the use of an **encrypted mesh VPN by default for internal traffic**. Every connection between the organisation's components runs inside an authenticated, encrypted tunnel, whether those components are on the same rack or on different continents. This is the simple primitive: strong cryptography applied uniformly, rather than a complex perimeter with trusted interior zones.
 
-```sh
-typst compile content/index.typ secure_architecture.pdf
-```
+There is a trade-off that must be named directly. Encrypting all internal traffic reduces the visibility a monitoring system has into the contents of that traffic. Some organisations respond to this by terminating encryption at the network edge, inspecting the plaintext, and re-encrypting onward, a practice sometimes called SSL/TLS inspection or break-and-inspect. The course rejects this practice. Decrypting traffic at the edge introduces a high-value interception point that must itself be trusted, secured, and operated, a new concentration of sensitive data and cryptographic material, a new complex component with its own attack surface, and a new place where an attacker who succeeds gets access to everything. The cure is worse than the disease. It is a case study in complexity defeating its own purpose.
 
-`compile.sh` sets the PDF creation timestamp from the latest git commit so the
-same commit produces the same metadata. The Markdown chapters are rendered into
-the PDF at build time; there is no separate site output. The PDF remains the
-canonical artifact.
+NIST has observed that much useful network telemetry remains available without decryption: connection endpoints, timing, volumes, packet sizes and flow patterns can support detection and investigation even when payloads are encrypted.[^nist-encrypted] The availability of individual signals varies with TLS 1.3, ECH and encrypted DNS, so the architect must verify what a given environment actually exposes. The course's position is still to encrypt everything internally, avoid decryption at the edge, and use observable properties rather than contents for monitoring. Simplicity and security align in the same direction. Complexity adopted in the name of visibility usually reduces both.
 
-## Controlled languages
+## Infrastructure as code
 
-Every chapter declares a controlled language in YAML frontmatter. Introduction,
-Adversary Awareness and the Human Layer use plain language; networking, host,
-observability, glossary and the practical use Simplified Technical English;
-Foundations, Identity, Data Security and Resilience use ACE for normative rules;
-Application and Governance use SBVR Structured English. See
-`cnl/README.md` for the full mapping and enforcement levels. Check declarations
-with:
+Infrastructure at this scale is too complex to manage by hand and too important to manage by hand. Every system in the organisation's environment should be describable as text, reviewable like source code, and reproducible from that description. This is infrastructure as code.
 
-```sh
-python3 tools/lint_cnl.py
-```
+The course prefers **declarative, deterministic** infrastructure where it is feasible, systems such as NixOS where the configuration describes the desired state and the tooling is responsible for making the managed parts of the running system match it. Within that managed scope, drift is structurally prevented: packages, services and configuration that are not declared are not present after a rebuild. User data and runtime state outside the declarative description remain, and must be accounted for separately. This is still the strongest form of the property, and where it can be used it should be.
 
-## Contributing
+Where deterministic systems are not feasible, legacy hosts, network appliances, heterogeneous fleets, organisations not ready for the adoption cost of a Nix-style worldview, **Ansible** is the correct tool. Ansible playbooks place infrastructure under version control, make changes reviewable, and produce repeatable results through idempotent modules. It runs against nearly anything that speaks SSH or an API. For most organisations it is the realistic starting point, and for many it is the realistic endpoint. It is infrastructure as code, and treating it as less would be wrong.
 
-- Write Markdown. Every chapter begins with YAML frontmatter declaring its
-  controlled language; see `cnl/README.md`. The chapter title follows on the
-  first line after the closing `---`.
-- Write in the chapter's declared CNL. ACE and SBVR chapters keep their
-  normative statements under an **Architectural rules** heading using `shall`.
-  `content/index.typ` renders with `h1-level: 2`, so `#`, `##`, `###` become the
-  book's chapter, section and subsection levels.
-- Page breaks are controlled in `content/index.typ`, not in chapter files. To
-  add a chapter, create `content/<part>/<chapter>.md`, add a `render-md` call at
-  the right position, and name the chapter in that part's opener.
-- Cite sources with Markdown footnotes (`[^label]` and `[^label]: short
-  citation`). Put the full publication details in `content/bibliography.md`.
-- Include real code from `content/snippets/` with
-  `<!-- include: snippets/path/to/file.nix -->`; the language is taken from the
-  file extension. Keep runnable configuration in snippet files rather than in
-  fenced Markdown blocks.
-- Use cmarker's reference syntax for cross-references: `[@label]` or
-  `[Chapter][@label]`. Explicit IDs can be set with `<h2 id="label">`.
-- The physical-layer diagram is retained as a documented `<!--raw-typst ... -->`
-  block in `secure_networking_layer1.md`; `content/index.typ` provides the
-  fletcher scope. Keep such blocks rare.
-- Prefer completed prose to outline stubs. If a section must remain skeletal,
-  say so explicitly rather than leaving a list of topics as a placeholder.
-- Regenerate `secure_architecture.pdf` when the text changes meaningfully.
+The distinction between the two is not declarative-versus-not. Both are declarative in intent. The distinction is determinism: whether the architecture can assert the running system matches the specification structurally, or whether that assertion depends on discipline in how the tool is used. Both sit inside the IaC category; they occupy different points on the determinism spectrum, and the right choice depends on the environment.
+
+## Least functionality
+
+A system should contain only the programs, services, libraries, and capabilities necessary for its function. Anything else is attack surface for no benefit. A web server does not need a compiler, a mail server does not need a GUI, a database server does not need any network service other than the one that serves queries. The course applies this principle rigorously: the default for any capability, any installed package, any running process, any open port, is that it does not exist unless a specific architectural reason requires it. This is least privilege extended from users and services to the system itself.
+
+Declarative infrastructure makes least functionality enforceable rather than aspirational. A traditional installation accumulates software over time through ad-hoc package installs, dependency updates, and administrator convenience. A NixOS configuration contains exactly the packages it declares in the managed system closure; there is nothing there to remove because nothing else was installed as part of that closure.
+
+## What the operating system has to be
+
+The operating system is the foundation every other architectural decision rests on. If the operating system cannot be trusted, nothing above it can be. This course therefore requires three properties of any operating system used in a significant architectural role, and these properties follow from the principles already stated rather than from any particular preference about software licensing.
+
+**The operating system must be auditable, meaning programmatically auditable, not merely nominally so.** The traditional framing treats auditability as something humans do by reading code and inspecting behaviour. For any modern system this is a fantasy. A typical Linux distribution contains tens of millions of lines of code across thousands of packages. Even the most capable team will never manually inspect more than a fraction of a percent of its own trusted computing base. Manual audit is not the property that matters. What matters is that the system exposes its composition and behaviour in a form that can be consumed by software, verified by software, and acted on by software.
+
+The concrete shape of this is the **software bill of materials (SBOM)**, an inventory of the components, versions and dependencies in a running system. An SBOM is not valuable on its own. It becomes valuable when it can be fed into an automated pipeline: CVE records identify vulnerabilities and CVSS supplies a severity score; a **Vulnerability Exploitability eXchange (VEX)** statement says whether a given vulnerability actually affects a component as deployed; and an asset management system correlates the SBOM, the vulnerability feed and the VEX statements to determine automatically what is exposed and what needs patching. The pieces exist — SPDX, CycloneDX, CSAF, PURL and CPE — and the course treats assembling them as a core architectural activity, not an optional enhancement.
+
+The pipeline only works if the system exposes its composition honestly. Closed-source systems do not. Even when they publish SBOMs, those SBOMs describe only what the vendor chooses to reveal, and the organisation has no way to verify that what is listed is what is actually running. Closed systems block automation and verification as much as they block inspection. A system whose real composition can only be taken on faith cannot be placed under an automated patching pipeline, because there is no authoritative answer to the question "is this component in our infrastructure or not?"
+
+Without this, the organisation cannot apply least functionality or minimise the trusted computing base in any meaningful way, because it does not know what is in its trusted computing base. Trust that cannot be verified programmatically, at the pace at which vulnerabilities are disclosed, is not trust; it is hope.
+
+**The operating system must be deterministic and infrastructure-as-code friendly.** Its configuration must be describable as text, reviewable like source code, and reproducible from that description, so that the running system can be asserted, at any time, to match the specification the organisation wrote. An operating system that changes behaviour between updates in ways the administrator did not authorise, or that re-enables functionality the administrator previously disabled, cannot be placed under infrastructure as code in any meaningful sense. The architecture loses its ability to say what the system is.
+
+**The operating system must not transmit information about the user or the system to third parties without the full knowledge and control of the organisation running it.** Software that collects information about user behaviour or system state and transmits it to an external party, without the user's full knowledge and without the user's ability to stop it, meets the working definition of spyware. The definition does not include an exception for software produced by large, well-known vendors. A system that behaves this way cannot serve as the foundation for an infrastructure the organisation is responsible for securing, because the organisation does not fully control what leaves its network.
+
+These three properties, auditability, determinism under infrastructure as code, and transmission only by the organisation's explicit choice, are in practice achievable only with software whose composition and behaviour the organisation can inspect and verify. Closed-source operating systems may approximate some of them through configuration effort and vendor promise, but the approximation is not enforceable and the promise is not verifiable. Open source is therefore the default throughout the course. The preference is for verifiability and control — licensing is the means by which those properties become enforceable, not an end in itself.
+
+## Incentives
+
+Professions like medicine, law enforcement, insurance, undertakers, and cybersecurity often operate under incentive structures that reward the **existence and persistence** of the very problems they exist to solve. Doctors in fee-for-service models earn more from procedures than prevention. Insurance companies profit from the gap between premiums collected and claims paid. Undertakers maximise revenue around grief. None of these fields are inherently immoral—most practitioners are trying to do good—but when revenue scales with sickness, claims, or crises rather than with health, fairness, or resolution, perverse outcomes become predictable, not accidental.
+
+Cybersecurity vendors suffer from exactly the same dynamic. The industry’s dominant business model sells observation, detection, incident response, threat intelligence, and layered “security products.” Revenue grows with alerts, breaches, complexity, and fear—not with architectures that simply make attacks structurally harder or irrelevant. Annual threat reports, fear-driven marketing, and the perpetual “you need one more tool” cycle are rational responses to incentives that reward crisis management over prevention by design. Companies that specialise **only** in incident response are especially vulnerable: their entire line of business depends on incidents continuing to happen. Fixing the underlying architecture and reallocating resources to long-term secure design would shrink their market. They therefore have a structural incentive to treat symptoms, not root causes.
+
+A clear real-world illustration from law enforcement is the 2015 U.S. Department of Justice investigation into the Ferguson, Missouri Police Department.[^ferguson] The report found that municipal revenue goals—fines, fees, and court collections—had come to shape policing priorities more than public safety. Officers were pressured to issue citations and make arrests for minor offences to balance city budgets. The result was aggressive enforcement that eroded community trust and diverted resources from serious crime prevention, not because officers were malicious, but because the incentive structure made revenue generation the measurable success metric.
+
+### Aligning vendor incentives
+
+Treat every vendor relationship as a deliberate security decision, not a default purchase. Ask explicitly:
+
+- Does this tool **reduce** the number of components, trust boundaries, and failure modes in our stack, or does it increase them?
+- Can we verify what the vendor’s software actually does (SBOM, reproducible builds, auditable source)?
+- Is the vendor’s revenue tied to our long-term success (e.g., outcome-based contracts, reduced incident volume) or to our continued insecurity (more seats, more alerts, more retainers)?
+- Can we exit without operational collapse? (Prefer open-source primitives and infrastructure-as-code over proprietary lock-in.)
+
+Favour vendors whose business model benefits when your architecture becomes simpler and more defensible. Reward those who help you need fewer of their services over time. Default to “no” for any vendor whose presence cannot be justified under the Parkerian Control property: does this increase or decrease our actual ability to determine what happens to our systems and data?
+
+Professionalism, ethics, and morality can and often do override bad incentives—Samuel Bowles makes this case powerfully in **The Moral Economy**.[^bowles] Good people in flawed systems frequently resist the pull of perverse rewards through personal integrity and professional norms. But the longer misaligned incentives remain in place, the stronger the “moral drift” becomes. Over time, even ethical actors adapt to the signals around them, and what starts as a structural flaw becomes normalised culture. The only reliable fix is to change the incentives themselves.
+
+The architecture this book teaches—declarative hosts, encrypted mesh VPN by default, identity as the perimeter, least functionality, and open-source primitives—is one way to do exactly that. It realigns the entire security conversation from “buy more tools to manage the mess” to “build the system so the mess never arises in the first place.”
+
+## What this course will teach you to build
+
+By the end of the course, a graduate will be capable of architecting the full infrastructure of a small-to-medium business from first principles, entirely on open-source software, in a form that can be expressed as text, reviewed like source code, and reproduced from its description. The architecture will have fail-safe defaults by construction, least privilege by construction, observability emitted by design rather than retrofitted, and a trust model in which every component's role and dependencies are explicit. It will require fewer tools than a conventional enterprise stack, cost less to operate, and remain more defensible over time, not because it has been optimised for cost or simplicity, but because security as an architectural property produces those outcomes as consequences.
+
+The remainder of this course is a path from principles to a working system. Each domain takes one layer or concern and teaches how to reason about it, design for it, and build it. The principles stated here are the constant reference; every decision in every later chapter should be traceable back to them.
+
+[^saltzer]: Jerome Saltzer and Michael Schroeder, “The Protection of Information in Computer Systems,” *Proceedings of the IEEE* 63, no. 9 (1975): 1278–1308.
+[^parker-hexad]: Donn B. Parker, *Fighting Computer Crime: A New Framework for Protecting Information*, Wiley, 1998.
+[^solarwinds]: US Department of Justice, “Charges Announced in solarwinds Compromise,” 2021; and CISA, “SolarWinds Supply Chain Compromise,” 2021.
+[^nist-encrypted]: NIST, *Guide to a Secure Enterprise Network Landscape* and related work on encrypted-traffic telemetry; see also NIST SP 800-207, *Zero Trust Architecture*, 2020.
+[^ferguson]: US Department of Justice, *Investigation of the Ferguson Police Department*, Civil Rights Division, 2015.
+[^bowles]: Samuel Bowles, *The Moral Economy: Why Good Incentives Are No Substitute for Good Citizens*, Yale University Press, 2016.
