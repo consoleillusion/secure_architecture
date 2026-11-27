@@ -127,7 +127,7 @@ Client                                Server
   |        --- connection established --|
 ```
 
-Three messages, two round trips for the client to know the connection is up, one round trip before payload can flow. The handshake serves three purposes: it confirms both endpoints exist and are willing, it exchanges initial sequence numbers, and it exchanges options (maximum segment size, window scale, SACK permission, timestamps).
+Three messages in one and a half round trips: the client can send payload with the final ACK after one round trip, and the server considers the connection established when that ACK arrives half a round trip later. The handshake serves three purposes: it confirms both endpoints exist and are willing, it exchanges initial sequence numbers, and it exchanges options (maximum segment size, window scale, SACK permission, timestamps).
 
 The initial sequence numbers must not be predictable by an off-path attacker — this is the lesson of the early sequence-number-prediction attacks of the late 1980s and 1990s. Modern stacks generate them from a hashed combination of the four-tuple and a per-boot secret.
 
@@ -311,7 +311,7 @@ If you run any internal services with redundancy, you have a load balancer. The 
 
 The right answer for most 100-person businesses is Layer 7 for HTTP services (HAProxy, nginx, Caddy, Traefik, or a cloud equivalent) and Layer 4 for everything else, including the occasional internal database or message bus that needs failover. Putting a Layer 7 load balancer in front of a database is a category error.
 
-A second consideration is TLS termination. Terminating TLS at the load balancer is convenient — one place to manage certificates, plaintext flows visible to the WAF and the logger — but it also means traffic between the load balancer and the backend is unencrypted unless you re-encrypt. For internal traffic on a trusted network, plaintext is usually acceptable. For traffic across any boundary, including between cloud availability zones, re-encrypt or terminate TLS at the backend.
+A second consideration is TLS termination. Terminating TLS at the load balancer is convenient — one place to manage certificates, plaintext flows visible to the WAF and the logger — but it also means traffic between the load balancer and the backend is unencrypted unless you re-encrypt. The course does not accept a plaintext hop even on the internal overlay: re-encrypt from the load balancer to the backend, or terminate TLS at the backend itself. A decrypted segment is readable by anything that compromises the load balancer, the path or the backend host, and it defeats the endpoint authentication that TLS provides.
 
 #### 8.4 VPNs and what layer they live at
 
@@ -322,7 +322,7 @@ VPNs that are relevant at this scale, ordered by operational simplicity:
 - **OpenVPN.** Runs over UDP or TCP. Older codebase, more configuration surface, broader client support. Acceptable if you have a reason to prefer it; not the recommended default for a new deployment.
 - **TLS-based VPNs (SSL VPNs).** Tunnel the network through HTTPS. The reason to use one is to traverse hostile firewalls that allow only TCP/443. The reason not to use one is everything else.
 
-The Layer 4 implication for all of these: a VPN tunnel adds a layer of transport beneath the application's transport. The headers and reliability behaviour the application sees are unchanged, but the actual packets on the wire are UDP (for WireGuard, OpenVPN-UDP, IKE/ESP) or TCP (for SSL VPNs and OpenVPN-TCP). This affects firewall rules, MTU calculations, and observability.
+The Layer 4 implication for all of these: a VPN tunnel adds a layer of transport beneath the application's transport. The headers and reliability behaviour the application sees are unchanged, but the actual packets on the wire are UDP (for WireGuard, OpenVPN-UDP and IKE; ESP is IP protocol 50, carried in UDP only when NAT-T is in use) or TCP (for SSL VPNs and OpenVPN-TCP). This affects firewall rules, MTU calculations, and observability.
 
 A note on TCP-over-TCP: tunnelling TCP through a TCP-based VPN is functional but produces pathological behaviour under loss, because the inner and outer TCP retransmit independently and interfere. WireGuard and OpenVPN-UDP avoid this by tunnelling at the IP layer and not retransmitting at the tunnel layer.
 

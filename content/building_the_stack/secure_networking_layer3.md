@@ -712,51 +712,18 @@ device and exist nowhere else.
 
 ### What an architect decides at Layer 3
 
-The principles from the introduction reduce, at this layer, to a
-concrete set of decisions, each of which should be made explicitly and
-recorded.
+The decisions developed above are collected here as a checklist. Each is argued in its own section; repeating the argument here would add nothing, so this table records only the answers.
 
-**The addressing plan.** Which subnets exist, what each contains, what
-the CIDR boundaries are, and how the plan accommodates growth without
-renumbering. IPv4 with RFC 1918 space internally; IPv6 with
-provider-assigned global unicast prefixes dual-stacked where available.
-Point-to-point links as `/30` or `/31` in IPv4, `/64` everywhere in
-IPv6 regardless of host count.
+| **Decision** | **The course's answer** |
+| --- | --- |
+| Addressing plan | RFC 1918 IPv4 with one subnet per trust zone; provider-assigned global unicast for IPv6, dual-stacked where available; `/30` or `/31` point-to-point links in IPv4, `/64` throughout IPv6 |
+| Subnet-to-zone mapping | Workstations, servers, printers, IoT, guest and infrastructure each in their own zone, with an enumerated default-deny policy between every pair |
+| Routing | Static by default; OSPF only where redundant paths require convergence, with authentication on every adjacency and passive host-facing interfaces; BGP only at a genuine multi-homed edge |
+| NAT | IPv4 edge only, and never as a security control; IPv6 uses a stateful firewall without NAT |
+| Firewall | nftables on every host and at every zone boundary, declared as code and version-controlled; edge default-deny in both directions with explicit exceptions |
+| ICMP | Permit echo, destination-unreachable, time-exceeded, packet-too-big and link-local NDP; rate-limit; ignore redirects |
+| Encrypted overlay | WireGuard mesh between all hosts, peer configuration as code; services bind to overlay addresses, underlay carries only peer UDP |
+| DHCP and DNS | Kea or dnsmasq with reservations for infrastructure; DHCP snooping at the switches; resolvers that enforce the organisation's name policy |
+| Monitoring | Flow metadata from router, firewall and WireGuard peers; contents stay encrypted and are not inspected |
 
-**The subnet-to-trust-zone mapping.** Each subnet corresponds to a
-trust zone, and each trust zone has an enumerated firewall policy
-governing traffic to and from every other zone. Workstations, servers,
-printers, IoT, guest, infrastructure — each in their own subnet, each
-with their own rules.
-
-**The routing discipline.** Static by default. Dynamic (OSPF) only if
-the topology genuinely requires automatic convergence on redundant
-paths; when deployed, with cryptographic authentication on every
-adjacency and passive interfaces on every host-facing port. BGP only
-where the organisation peers directly with multiple upstreams, which
-at this scale is rare.
-
-**The NAT posture.** NAT at the IPv4 edge as a necessity, understood
-not to contribute to security. The IPv6 path free of NAT, with the
-firewall providing the containment that NAT used to provide by
-accident.
-
-**The firewall architecture.** nftables policy on every host,
-default-deny, declared as code, version-controlled. Firewall policy at
-every subnet boundary, default-deny, declared as code. Edge firewall
-policy, default-deny inbound, default-deny outbound with explicit
-allowed categories.
-
-**The ICMP policy.** Permit the types that are operationally required
-(echo, destination unreachable, time exceeded, packet too big, NDP
-within link-local scope). Rate-limit. Deny redirects. Deny redirect
-acceptance on every host.
-
-**The encrypted overlay.** WireGuard mesh between all hosts, with peer configuration managed as code. Internal services listen on the overlay address, not the underlay. The underlay's job is to carry UDP between WireGuard peers; nothing else rides on its confidentiality or integrity.  **DHCP, DNS, and operational services.** Kea or dnsmasq providing address assignment, with reservations for infrastructure. DHCP snooping enabled at the switches as defence in depth. DNS configured to point at organisational resolvers that enforce the organisation's name-resolution policy. 
-
-**Monitoring posture.** The metadata of Layer 3 traffic — source and destination prefixes, connection counts, volumes, timing — is captured and analysed. The contents are encrypted and not inspected, in keeping with the introduction's position on break-and-inspect. NetFlow or IPFIX from the edge router, firewall logs from every enforcement point, and flow records from WireGuard peers collectively provide the observable surface.
-
-The architecture that emerges from these decisions is small. It has a flat, legible addressing plan, a narrow underlay, a cryptographicoverlay that carries the real trust, firewall policies that live as
-code, and a handful of well-understood daemons implementing every required function. It treats Layer 3 as plumbing — necessary, competent, and not where the security lives. The security lives in the keys, in the firewall policies, and in the architect's decisions about what is allowed to talk to what. Layer 3 is the layer that makes the plumbing work. The introduction's principles, applied at this layer, produce exactly this: a network whose routing is correct because
-it is simple, and whose data is safe because the routing is not what
-keeps it safe.
+The result is a narrow underlay whose routing is simple, an overlay that carries the trust, and firewall policy that lives as code. Layer 3 is plumbing: necessary, competent, and not where the security lives.
