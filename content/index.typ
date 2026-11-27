@@ -9,6 +9,8 @@
 #let muted = rgb("#64748b")
 #let hairline = rgb("#cbd5e1")
 #let paper-tint = rgb("#f8fafc")
+#let paper = rgb("#fafafa")
+#let body-font = "Liberation Sans"
 
 // cmarker scope for the few Markdown files that retain Typst diagrams.
 #let md-scope = (
@@ -49,7 +51,7 @@
 #let part-open(num, title, blurb, chapters) = {
   align(center)[
     #block(above: 3.4cm)[
-      #set text(font: "TeX Gyre Heros", size: 11pt, weight: "semibold", fill: accent)
+      #set text(font: body-font, size: 11pt, weight: "semibold", fill: ink)
       PART #num
     ]
   ]
@@ -60,7 +62,7 @@
       #blurb
     ]
     #block(above: 2em)[
-      #set text(font: "TeX Gyre Heros", size: 10.5pt, fill: ink)
+      #set text(font: body-font, size: 10.5pt, fill: ink)
       #chapters
     ]
   ]
@@ -78,30 +80,14 @@
 
 #page(
   paper: "a4",
-  margin: (x: 2.2cm, y: 2.4cm),
+  margin: (x: 2.2cm, top: 2.4cm, bottom: 0.6cm),
   fill: rgb("#111111"),
   header: none,
   numbering: none,
 )[
   #place(bottom + left)[
-    #block(width: 82%)[
-      #set text(font: "TeX Gyre Heros", size: 33pt, weight: "bold", fill: rgb("#f8fafc"))
-      Secure Architecture
-      #block(above: 0.7em)[
-        #set text(font: "TeX Gyre Heros", size: 15pt, fill: rgb("#5eead4"))
-        An architecture-first security course
-      ]
-      #block(above: 1.4em)[
-        #set text(font: "TeX Gyre Heros", size: 11pt, fill: rgb("#cbd5e1"))
-        For the people who design and operate infrastructure at small-to-medium
-        businesses — where the team that builds the system is the team responsible
-        for keeping it secure.
-      ]
-      #block(above: 2.4em)[
-        #set text(font: "TeX Gyre Heros", size: 9pt, fill: rgb("#94a3b8"))
-        Work in progress · Course manuscript
-      ]
-    ]
+    #set text(font: body-font, size: 40pt, weight: "bold", fill: paper)
+    Secure Architecture
   ]
 ]
 
@@ -110,16 +96,17 @@
 #set page(
   paper: "a4",
   margin: (x: 2.2cm, y: 2.4cm),
+  fill: paper,
   numbering: "1",
   number-align: center,
   header: [
-    #set text(font: "TeX Gyre Heros", size: 8pt, fill: muted)
+    #set text(font: body-font, size: 8pt, fill: muted)
     #grid(columns: (1fr, auto), align: left)[Secure Architecture][Course manuscript]
     #line(length: 100%, stroke: 0.5pt + hairline)
   ],
 )
 
-#set text(font: "TeX Gyre Heros", size: 10.5pt, lang: "en")
+#set text(font: body-font, size: 10.5pt, lang: "en")
 #set par(justify: true, leading: 0.72em, spacing: 0.85em)
 #set table(stroke: 0.4pt + hairline, inset: (x: 0.5em, y: 0.35em))
 
@@ -128,32 +115,32 @@
     // Parts: large, centred titles on their own pages.
     align(center)[
       #block(above: 0.2em, below: 0.6em)[
-        #set text(font: "TeX Gyre Heros", size: 26pt, weight: "bold", fill: ink)
+        #set text(font: body-font, size: 26pt, weight: "bold", fill: ink)
         #it.body
       ]
     ]
   } else if it.level == 2 {
-    // Chapters: large, underlined with the accent colour.
+    // Chapters: large, with a neutral rule.
     block(
       above: 1.5em,
       below: 0.9em,
       width: 100%,
       inset: (bottom: 0.35em),
-      stroke: (bottom: 1.4pt + accent),
+      stroke: (bottom: 1.4pt + ink),
     )[
-      #set text(font: "TeX Gyre Heros", size: 20pt, weight: "bold", fill: ink)
+      #set text(font: body-font, size: 20pt, weight: "bold", fill: ink)
       #it.body
     ]
   } else if it.level == 3 {
-    // Sections: smaller, accent-coloured.
+    // Sections: smaller, neutral.
     block(above: 1.1em, below: 0.45em)[
-      #set text(font: "TeX Gyre Heros", size: 13pt, weight: "semibold", fill: accent)
+      #set text(font: body-font, size: 13pt, weight: "semibold", fill: ink)
       #it.body
     ]
   } else {
     // Subsections and anything deeper.
     block(above: 0.8em, below: 0.3em)[
-      #set text(font: "TeX Gyre Heros", size: 11pt, weight: "semibold", fill: ink)
+      #set text(font: body-font, size: 11pt, weight: "semibold", fill: ink)
       #it.body
     ]
   }
@@ -192,7 +179,7 @@
 // ---- Contents ----
 
 #block(above: 0.4em, below: 1.1em)[
-  #set text(font: "TeX Gyre Heros", size: 22pt, weight: "bold", fill: ink)
+  #set text(font: body-font, size: 22pt, weight: "bold", fill: ink)
   Contents
 ]
 #outline(depth: 3, title: none)
