@@ -10,9 +10,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Typst
-        uses: taiki-e/install-action@v2
-        with:
-          tool: typst@0.15.0
+        run: |
+          curl -fsSL \
+            https://github.com/typst/typst/releases/download/v0.15.0/typst-x86_64-unknown-linux-musl.tar.xz \
+            -o typst.tar.xz
+
+          tar -xJf typst.tar.xz
+          sudo install typst-x86_64-unknown-linux-musl/typst /usr/local/bin/typst
+          typst --version
       - name: Compile PDF
         run: ./compile.sh
       - name: Create GitHub Release
@@ -25,3 +30,4 @@ jobs:
             --target "$GITHUB_SHA" \
             --title "Build #${GITHUB_RUN_NUMBER}" \
             --notes "Automatically generated from commit ${GITHUB_SHA}."
+
