@@ -333,6 +333,10 @@
 #{
   render-md("glossary.md", "glossary")
 }
+#pagebreak()
+#{
+  render-md("practicals/samba_ad_nixos.md", "samba-practical")
+}
 
 /*
 The former automation outline is being distributed into the host, application,
