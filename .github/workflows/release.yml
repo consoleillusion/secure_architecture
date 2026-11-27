@@ -24,10 +24,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="build-${GITHUB_RUN_NUMBER}"
+          TAG="v${GITHUB_RUN_NUMBER}.0.0"
+          ASSET="secure_architecture-${TAG}.pdf"
+          cp secure_architecture.pdf "$ASSET"
           gh release create "$TAG" \
-            secure_architecture.pdf \
+            "$ASSET" \
             --target "$GITHUB_SHA" \
-            --title "Build #${GITHUB_RUN_NUMBER}" \
+            --title "$TAG" \
             --notes "Automatically generated from commit ${GITHUB_SHA}."
-
