@@ -9,7 +9,9 @@ lint: strict
 
 ## Goals
 
-The goal of security is to enable the organisation to meet its mission and business objectives while exercising due care over the risks to itself, its partners and its customers.## Architectural rules
+The goal of security is to enable the organisation to meet its mission and business objectives while exercising due care over the risks to itself, its partners and its customers.
+
+## Architectural rules
 
 - Every component shall default to denial.
 - Every access shall pass complete mediation.
