@@ -29,12 +29,13 @@ minimizing the trusted computing base — to every component.
 - The host, application security, observability, resilience, and governance
   chapters currently exist primarily as structured outlines with `Goal:` lines
   and bullet-point topics.
-- The `src/automation/` chapter is written but commented out in `src/main.typ`;
-  the intention is to distribute its material across the relevant chapters
-  rather than keep it standalone.
-- `osi/` contains a multi-file treatment of networking with per-layer files,
-  diagrams, and a ports reference. Layers 5, 6, and 8 are currently commented
-  out of `osi/main.typ`; files ending in `.typOLD` are older drafts, not part
+- The automation chapter is written as Markdown but excluded from the render
+  list in `src/index.typ`; the intention is to distribute its material across
+  the relevant chapters rather than keep it standalone.
+- `src/building_the_stack/secure_networking/` contains a multi-file treatment
+  of networking with per-layer files, a diagram, and a ports reference. Layers
+  5, 6, and 8 and `ports.md` are currently excluded from the render list.
+  Files ending in `.typOLD` under `src/osi/` are older Typst drafts, not part
   of the build.
 - `secure_architecture.pdf` is a generated snapshot. Regenerate it after
   editing sources; do not edit it directly.
@@ -45,33 +46,42 @@ minimizing the trusted computing base — to every component.
 ./
 ├── compile.sh                # build script; writes the PDF at the project root
 ├── src/
-│   ├── main.typ              # root document; include order = chapter order
-│   ├── introduction/         # one main.typ per chapter
-│   ├── foundations/
-│   ├── osi/                  # networking chapter, split by layer/topic
-│   ├── host/
-│   ├── iam/
-│   ├── data_security/
-│   ├── application/
-│   ├── observability/
-│   ├── adverserial/          # chapter on adversary awareness
-│   ├── incentives/           # human behaviour, incentives, economics
-│   ├── resilience/
-│   ├── grc/
-│   └── automation/           # currently excluded from the build
+│   ├── index.typ             # root document; render order = chapter order
+│   ├── principles_and_premises/
+│   │   ├── introduction/main.md
+│   │   └── foundations/main.md
+│   ├── building_the_stack/
+│   │   ├── secure_networking/
+│   │   │   ├── main.md       # chapter intro, quote and OSI table
+│   │   │   ├── protocol_categories.md
+│   │   │   ├── layer0.md … layer8.md
+│   │   │   └── ports.md      # excluded reference
+│   │   ├── host_security/main.md
+│   │   ├── identity_pki_zero_trust/main.md
+│   │   ├── data_security/main.md
+│   │   ├── application_supply_chain/main.md
+│   │   └── automation/main.md # excluded from the build
+│   ├── operating_and_defending/
+│   │   ├── observability/main.md
+│   │   ├── adversary_awareness/main.md
+│   │   └── resilience/main.md
+│   └── people_incentives_and_obligation/
+│       ├── human_layer/main.md
+│       └── governance_compulsion_privacy/main.md
 └── secure_architecture.pdf   # generated snapshot
 ```
 
-`src/main.typ` is the root document, and the chapter directories under `src/` are its includes.
+`src/index.typ` is the only Typst source. It renders the Markdown files with
+cmarker; the order of its `render-md` calls is the chapter order. Older
+`.typOLD` drafts remain under `src/osi/` only as historical references.
 
 ## Building
 
 Requirements:
 
-- [Typst](https://typst.app/) CLI (tested with 0.15.x). HTML export currently
-  requires a build with the `html` feature enabled.
-- Network access on first build if the `@preview` packages (`tablem`,
-  `fletcher`) are not already in the Typst package cache.
+- [Typst](https://typst.app/) CLI (tested with 0.15.x).
+- The `@preview` packages `cmarker` 0.1.10 and `fletcher` 0.5.8. Network access
+  is needed on first build if they are not already in the Typst package cache.
 
 From the project root:
 
@@ -83,18 +93,25 @@ From the project root:
 Or compile directly:
 
 ```sh
-typst compile src/main.typ secure_architecture.pdf
+typst compile src/index.typ secure_architecture.pdf
 ```
 
-HTML export is unstable and emits warnings for page rules, page breaks, and
-diagrams; the PDF is the canonical output for now.
+The Markdown chapters are rendered into the PDF at build time; there is no
+separate site output. The PDF remains the canonical artifact.
 
 ## Contributing
 
-- Write Typst. Chapter files use `== Chapter title` as their first line and
-  conventionally end with `#pagebreak()`.
-- To add a chapter, create `src/<chapter>/main.typ` and add an `#include` line
-  to `src/main.typ` in the position where it belongs.
+- Write Markdown. Chapter files use `# Chapter title` as their first line.
+  `src/index.typ` renders with `h1-level: 2`, so `#`, `##`, `###` become the
+  book's chapter, section and subsection levels.
+- Page breaks are controlled in `src/index.typ`, not in chapter files. To add a
+  chapter, create `src/<part>/<chapter>/main.md` and add a `render-md` call in
+  `src/index.typ` at the position where it belongs.
+- Use cmarker's reference syntax in Markdown: `[@label]` or
+  `[Chapter][@label]`. Explicit IDs can be set with `<h2 id="label">`.
+- The physical-layer diagram is retained as a documented `<!--raw-typst ... -->`
+  block in `secure_networking/layer1.md`; `src/index.typ` provides the fletcher
+  scope. Keep such blocks rare.
 - Cite sources inline where they inform architectural claims (NIST SP 800-33,
   Saltzer and Schroeder, NIST 800-63B, and so on).
 - Keep outlines when a section is unfinished — the bullet lists are intentional
