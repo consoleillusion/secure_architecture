@@ -120,152 +120,11 @@ realm zone.
 
 The NixOS configuration for the DC is the centrepiece of the
 declarative half of the deployment. The configuration below targets
-NixOS 25.05 or unstable, which use the structured `services.samba.settings`
+a current NixOS release (26.05 or later), which uses the structured `services.samba.settings`
 attribute set; older releases used `configText` or `extraConfig`, and
 the configuration would have to be adjusted accordingly.
 
-```nix
-{ config, lib, pkgs, ... }:
-
-let
-  realm = "CORP.EXAMPLE.COM";
-  domain = "CORP";
-  netbios = "DC01";
-  dcIp = "10.42.0.10";
-  dnsForwarder = "10.42.0.1";  # internal validating resolver
-in {
-  # The DC is the authoritative DNS for the realm. Disable any
-  # other resolver configuration that would compete with Samba's
-  # internal DNS backend.
-  systemd.services.resolvconf.enable = false;
-  services.resolved.enable = false;
-
-  # The DC's own resolver points at itself for the realm zone,
-  # with the internal validating resolver as the upstream for
-  # everything else.
-  environment.etc."resolv.conf".text = ''
-    search corp.example.com
-    nameserver ${dcIp}
-  '';
-
-  # Samba AD DC requires a Samba build with AD, LDAP, and mDNS
-  # support. The samba4Full package includes them; the lighter
-  # default samba package does not.
-  services.samba = {
-    enable = true;
-    package = pkgs.samba4Full;
-    # Disable the standalone services that conflict with the AD DC
-    # role. The samba-ad-dc systemd unit replaces them.
-    nmbd.enable = false;
-    winbindd.enable = false;
-    smbd.enable = false;
-    openFirewall = false;  # we control the firewall explicitly below
-    settings = {
-      global = {
-        "server role"          = "active directory domain controller";
-        "realm"                = realm;
-        "workgroup"            = domain;
-        "netbios name"         = netbios;
-        "dns forwarder"        = dnsForwarder;
-        "idmap_ldb:use rfc2307" = "yes";
-        # Bind only to the mesh interface; never expose the DC
-        # to interfaces the architecture does not control.
-        "interfaces"           = "lo wg0";
-        "bind interfaces only" = "yes";
-        # SMB encryption is required on the wire even though the
-        # mesh already encrypts; defence in depth.
-        "server smb encrypt"   = "required";
-        "server min protocol"  = "SMB3_00";
-        # TLS settings for the LDAP listener; the DC's own
-        # certificate is provisioned in /var/lib/samba/private/tls.
-        "tls enabled"          = "yes";
-        "tls keyfile"          = "tls/key.pem";
-        "tls certfile"         = "tls/cert.pem";
-        "tls cafile"           = "tls/ca.pem";
-        # Audit: ship every authentication and authorisation
-        # decision into the journal at a level the observability
-        # pipeline picks up.
-        "log level"            = "1 auth_audit:3 auth_json_audit:3";
-        "log file"             = "/var/log/samba/log.%m";
-      };
-      sysvol = {
-        "path"      = "/var/lib/samba/sysvol";
-        "read only" = "No";
-      };
-      netlogon = {
-        "path"      = "/var/lib/samba/sysvol/corp.example.com/scripts";
-        "read only" = "No";
-      };
-    };
-  };
-
-  # The AD DC needs the samba-ad-dc unit, not smbd/nmbd. The unit
-  # is shipped by the Samba package; we just have to make sure it
-  # is the one that runs.
-  systemd.services.samba-ad-dc = {
-    description = "Samba Active Directory Domain Controller";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    wantedBy = [ "multi-user.target" ];
-    serviceConfig = {
-      Type = "notify";
-      ExecStart = "${pkgs.samba4Full}/sbin/samba --foreground --no-process-group";
-      ExecReload = "${pkgs.coreutils}/bin/kill -HUP $MAINPID";
-      LimitNOFILE = 16384;
-      Restart = "on-failure";
-    };
-    unitConfig.RequiresMountsFor = "/var/lib/samba";
-  };
-
-  # The firewall: open the AD DC ports on the mesh interface only.
-  networking.firewall = {
-    enable = true;
-    interfaces.wg0 = {
-      allowedTCPPorts = [
-        53      # DNS
-        88      # Kerberos
-        135     # RPC endpoint mapper
-        139     # NetBIOS session service (legacy SMB)
-        389     # LDAP
-        445     # SMB
-        464     # Kerberos password change
-        636     # LDAPS
-        3268    # Global Catalog
-        3269    # Global Catalog SSL
-        49152 49153 49154 49155 49156  # RPC dynamic range, narrowed
-      ];
-      allowedUDPPorts = [
-        53      # DNS
-        88      # Kerberos
-        123     # NTP
-        137 138 # NetBIOS name and datagram
-        389     # CLDAP
-        464     # Kerberos password change
-      ];
-    };
-    # Everything else is closed.
-    allowedTCPPorts = [];
-    allowedUDPPorts = [];
-  };
-
-  # NTP is non-negotiable for Kerberos. The DC syncs to a chosen
-  # internal time source; clients sync to the DC.
-  services.chrony = {
-    enable = true;
-    servers = [ "10.42.0.1" ];  # internal authoritative time source
-    extraConfig = ''
-      allow 10.42.0.0/16
-      bindaddress ${dcIp}
-    '';
-  };
-
-  # Backups: the directory itself is in /var/lib/samba, which is
-  # snapshotted by the host's backup substrate. The keys are in
-  # /var/lib/samba/private and are backed up separately, encrypted,
-  # to the offline-keys location the cryptography chapter develops.
-  # The backup configuration itself lives in the host module.
-}
-```
+<!-- include: snippets/samba/dc.nix -->
 
 The configuration is long but uniform. Every value is in version
 control. Every rebuild reconstructs the exact same configuration.
@@ -301,38 +160,16 @@ the same way other state-bearing systems are tested.
 
 The provisioning command:
 
-```bash
-= Stop the AD DC service if it is running. It will fail to start
-= without a provisioned database; this is expected.
-systemctl stop samba-ad-dc
-
-= Move any existing smb.conf out of the way; the provisioner will
-= write a new one.
-mv /etc/samba/smb.conf /etc/samba/smb.conf.bak 2>/dev/null || true
-
-= Run the provisioner with the deployment's chosen values.
-samba-tool domain provision \
-    --server-role=dc \
-    --use-rfc2307 \
-    --dns-backend=SAMBA_INTERNAL \
-    --realm=CORP.EXAMPLE.COM \
-    --domain=CORP \
-    --adminpass="$(cat /run/secrets/ad-admin-password)" \
-    --host-ip=10.42.0.10 \
-    --host-name=dc01
-
-= The provisioner writes /var/lib/samba/private/krb5.conf with the
-= realm configuration. Symlink it into /etc so the system uses it.
-ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
-
-= Start the AD DC.
-systemctl start samba-ad-dc
-```
+<!-- include: snippets/samba/provision.sh -->
 
 The administrator password is read from a file the secrets-management
 substrate has placed at `/run/secrets/ad-admin-password`. NixOS's
 `agenix` and `sops-nix` modules both implement this pattern; the
-secret never appears in the world-readable `/nix/store`. The
+secret never appears in the world-readable `/nix/store`. The command
+line is still a weak point: Samba scrambles the process title after
+startup, but there is a race, so the provisioning host must restrict
+who can inspect processes. Where automation allows it, enter the
+password interactively at the prompt instead. The
 administrator account exists, and it is the first account
 provisioned, but it is not the account that day-to-day administrators
 use. As soon as provisioning is complete and the DC is reachable, a
@@ -355,27 +192,9 @@ adding it later.
 The first thing to do after provisioning is verify that the basic
 machinery works. The four checks below are standard.
 
-```bash
-= Kerberos: obtain a TGT for the administrator. This exercises the
-= KDC end to end.
-kinit administrator@CORP.EXAMPLE.COM
-klist  # should show a ticket cache with krbtgt/CORP.EXAMPLE.COM
+<!-- include: snippets/samba/verify.sh -->
 
-= DNS: the AD DC should be answering queries for the realm.
-dig @10.42.0.10 _ldap._tcp.corp.example.com SRV
-= Should return an SRV record pointing at dc01.corp.example.com
-
-= LDAP: bind to the directory using GSSAPI (Kerberos), confirming
-= the LDAP server accepts the ticket the KDC issued.
-ldapsearch -H ldap://dc01.corp.example.com -Y GSSAPI \
-    -b "dc=corp,dc=example,dc=com" "(sAMAccountName=administrator)"
-
-= samba-tool: a smoke test against the domain itself.
-samba-tool domain info 127.0.0.1
-samba-tool user list
-```
-
-Each of these exercising a different subsystem. `kinit` exercises the
+Each of these exercises a different subsystem. `kinit` exercises the
 KDC. `dig` exercises the DNS. `ldapsearch` exercises the LDAP server
 and the GSSAPI binding through it. `samba-tool` exercises the
 domain-management interface. If any of them fails, the failure
@@ -390,123 +209,7 @@ domain, with its own NixOS configuration that runs Samba in the
 member-server role and serves SMB shares whose ACLs are domain
 groups.
 
-```nix
-{ config, lib, pkgs, ... }:
-
-let
-  realm = "CORP.EXAMPLE.COM";
-  domain = "CORP";
-  fsHostname = "fs01";
-in {
-  networking.hostName = fsHostname;
-  networking.domain = "corp.example.com";
-
-  # The file server uses the domain's DNS so that domain SRV
-  # records resolve correctly. Without this, Kerberos discovery
-  # fails.
-  networking.nameservers = [ "10.42.0.10" ];
-
-  # Time sync against the DC; Kerberos requires it.
-  services.chrony = {
-    enable = true;
-    servers = [ "10.42.0.10" ];
-  };
-
-  # SSSD is the system's bridge between the local OS and the
-  # domain. It implements PAM and NSS modules that consult the
-  # domain for authentication and identity, with a local cache
-  # for offline operation.
-  services.sssd = {
-    enable = true;
-    config = ''
-      [sssd]
-      domains = ${realm}
-      services = nss, pam
-      config_file_version = 2
-
-      [domain/${realm}]
-      id_provider = ad
-      access_provider = ad
-      ad_domain = ${realm}
-      krb5_realm = ${realm}
-      realmd_tags = manages-system joined-with-samba
-      cache_credentials = True
-      ldap_id_mapping = False  # use RFC2307 attributes from AD
-      use_fully_qualified_names = False
-      fallback_homedir = /home/%u
-      default_shell = /bin/bash
-    '';
-  };
-
-  # PAM: have login services consult SSSD. The NixOS sssd module
-  # adds the right PAM stanzas automatically when enabled, but
-  # the home directory pam_mkhomedir line has to be requested
-  # explicitly so that domain users get a home directory the
-  # first time they log in.
-  security.pam.services = {
-    sshd.makeHomeDir = true;
-    login.makeHomeDir = true;
-  };
-
-  # Samba in member-server mode. Note the absence of "server role
-  # = active directory domain controller"; this server is not a DC.
-  services.samba = {
-    enable = true;
-    package = pkgs.samba4Full;
-    openFirewall = false;
-    settings = {
-      global = {
-        "workgroup"            = domain;
-        "realm"                = realm;
-        "security"             = "ADS";
-        "kerberos method"      = "secrets and keytab";
-        "winbind use default domain" = "yes";
-        "winbind enum users"   = "yes";
-        "winbind enum groups"  = "yes";
-        "winbind refresh tickets" = "yes";
-        "template shell"       = "/bin/bash";
-        "template homedir"     = "/home/%U";
-        "idmap config * : backend"  = "tdb";
-        "idmap config * : range"    = "100000-199999";
-        "idmap config ${domain} : backend" = "ad";
-        "idmap config ${domain} : schema_mode" = "rfc2307";
-        "idmap config ${domain} : range"   = "10000-99999";
-        "server smb encrypt"   = "required";
-        "server min protocol"  = "SMB3_00";
-        "log level"            = "1 auth_audit:3";
-      };
-      shared = {
-        "path"                 = "/srv/shared";
-        "browseable"           = "yes";
-        "read only"            = "no";
-        "valid users"          = "@\"${domain}\\Domain Users\"";
-        "create mask"          = "0660";
-        "directory mask"       = "0770";
-        "vfs objects"          = "acl_xattr";
-        "map acl inherit"      = "yes";
-        "store dos attributes" = "yes";
-      };
-      engineering = {
-        "path"                 = "/srv/engineering";
-        "browseable"           = "yes";
-        "read only"            = "no";
-        "valid users"          = "@\"${domain}\\Engineering\"";
-        "create mask"          = "0660";
-        "directory mask"       = "0770";
-        "vfs objects"          = "acl_xattr";
-      };
-    };
-  };
-
-  # winbindd is required on a member server; it is the daemon that
-  # talks to the domain controller and resolves domain users and
-  # groups for the local system.
-  services.samba.winbindd.enable = true;
-
-  networking.firewall.interfaces.wg0.allowedTCPPorts = [ 445 139 ];
-  networking.firewall.interfaces.wg0.allowedUDPPorts = [ 137 138 ];
-}
-```
+<!-- include: snippets/samba/fileserver.nix -->
 
 The member server's join to the domain is, like the DC's
 provisioning, an imperative one-time operation. After the NixOS
@@ -514,24 +217,7 @@ configuration above is applied, the server is configured to behave
 as a domain member but does not yet have credentials in the domain.
 The join command issues those credentials:
 
-```bash
-= Authenticate as a domain administrator and join the server to
-= the domain. This creates a computer account in the directory and
-= stores the keytab in /var/lib/samba/private.
-net ads join -U administrator
-= (prompts for the domain administrator's password)
-
-= Verify the join succeeded.
-net ads testjoin
-= Should report: Join is OK
-
-= Verify SSSD can resolve domain users.
-getent passwd 'CORP\jdoe'
-= Should return a passwd entry with the user's UID, GID, and home
-
-= Restart the dependent services so the new keytab takes effect.
-systemctl restart samba-smbd winbind sssd
-```
+<!-- include: snippets/samba/join.sh -->
 
 The principle that has been operating throughout, the imperative
 one-time steps are documented, scripted, and re-runnable, applies
@@ -555,36 +241,7 @@ GSSAPI authentication enabled in the SSH server config) and for
 mounting SMB shares from the file server (with the `cifs-utils`
 package and `sec=krb5` mount option).
 
-```nix
-= Excerpt of a Linux workstation's NixOS configuration. The SSSD
-= block is identical to the file server's; only the Samba module
-= is omitted.
-
-services.sssd.enable = true;
-= ... same config as fileserver ...
-
-= Allow Kerberos-authenticated SSH between domain hosts.
-services.openssh.settings.GSSAPIAuthentication = true;
-
-= CIFS mount support, for accessing SMB shares with the user's
-= Kerberos ticket.
-environment.systemPackages = with pkgs; [ cifs-utils ];
-
-= Optional: an automounter for SMB shares, so users can `cd`
-= into //fs01/shared and have it mounted on demand.
-services.autofs = {
-  enable = true;
-  autoMaster = ''
-    /mnt/smb /etc/autofs/auto.smb --timeout=300
-  '';
-};
-environment.etc."autofs/auto.smb".text = ''
-  shared -fstype=cifs,sec=krb5,cruid=${"$"}{UID} \
-      ://fs01.corp.example.com/shared
-  engineering -fstype=cifs,sec=krb5,cruid=${"$"}{UID} \
-      ://fs01.corp.example.com/engineering
-'';
-```
+<!-- include: snippets/samba/workstation.nix -->
 
 ### Joining a Windows workstation
 
@@ -592,7 +249,7 @@ Windows is the OS the protocol was designed for. Joining a domain
 on Windows 10 or 11 Pro is a settings dialog: System → About →
 Join a domain, enter `corp.example.com`, supply a domain
 administrator credential, reboot. The workstation's computer
-account is created in the directory automatically, the keytab is
+account is created in the directory automatically, the machine account password is
 stored in the Windows-native equivalent (LSA secrets), and from
 the next login onward the user can log in with `CORP\username` and
 their domain password. SMB access to `\\fs01\shared` and
@@ -613,11 +270,10 @@ rather than in Group Policy.
 
 ### Joining a macOS workstation
 
-macOS has had AD binding support for two decades. The mechanism on
-modern macOS is **Profile Manager** or, more often in small
-businesses, the System Settings → Users & Groups → Network Account
-Server pane, which writes the directory configuration to
-`/Library/Preferences/OpenDirectory/`. The user enters the domain
+macOS has had AD binding support for two decades. Modern macOS uses `dsconfigad` or, more often in small
+businesses, an MDM profile to write the directory configuration to
+`/Library/Preferences/OpenDirectory/`. Profile Manager was removed and
+the old Network Account Server pane is no longer a reliable path. The user enters the domain
 name, supplies an administrator credential, and the machine is
 bound. Kerberos works thereafter, SMB shares are accessible with
 the user's domain credentials, and the directory's group
@@ -628,7 +284,7 @@ several macOS versions, deprioritised the AD-binding code path in
 favour of mobile-device-management profiles distributed by an MDM,
 and the AD-binding implementation has become more sensitive to
 edge cases. For an organisation with significant macOS presence,
-the architectural realistic answer is often to use AD for
+the architecturally realistic answer is often to use AD for
 authentication and an MDM (Jamf, or the open-source MicroMDM) for
 configuration, rather than to expect AD's GP-equivalent to manage
 macOS the way it manages Windows.
@@ -641,21 +297,7 @@ and writable by the engineering team, but not by the rest of the
 company, is a matter of two domain-side actions and one
 file-server-side action:
 
-```bash
-= On the DC: create the group, if it does not exist, and add users.
-samba-tool group add Engineering --description="Engineering team"
-samba-tool group addmembers Engineering "jdoe,asmith,bnguyen"
-
-= On the file server: create the directory and set its ACL so that
-= only the Engineering group has write access. setfacl with NFSv4
-= ACLs (which Samba's acl_xattr maps to NTFS-style ACLs) is the
-= right tool here.
-mkdir -p /srv/engineering
-chown root:"CORP\\Engineering" /srv/engineering
-chmod 2770 /srv/engineering
-setfacl -m "g:CORP\\Engineering:rwx" /srv/engineering
-setfacl -d -m "g:CORP\\Engineering:rwx" /srv/engineering
-```
+<!-- include: snippets/samba/groups.sh -->
 
 The share definition in the file server's `services.samba.settings`
 references the same group, the `valid users = @"CORP\Engineering"`
@@ -684,12 +326,7 @@ group-policy files and login scripts, replicated between DCs in a
 multi-DC setup). Both have to be backed up. The `samba-tool domain
 backup` command produces a consistent snapshot:
 
-```bash
-samba-tool domain backup online \
-    --server=dc01.corp.example.com \
-    --targetdir=/var/backups/samba \
-    -UAdministrator
-```
+<!-- include: snippets/samba/backup.sh -->
 
 The output is a tarball containing the directory and the keys at a
 moment-consistent point. The backup is encrypted, with the same
@@ -746,10 +383,10 @@ standard pattern is **Keycloak**, configured to federate against
 the Samba LDAP backend, presenting OIDC and SAML to the
 applications and consuming the LDAP directory as its user database.
 This adds a second component to the identity stack, but it is the
-right component, and it does not duplicate the user database, the
+right component, and it does not duplicate the user database: the
 LDAP in Samba remains the source of truth and Keycloak is the
-federation front end. Adding Keycloak to a NixOS host is its own
-section's worth of configuration, which a future chapter develops.
+federation front end. Configuring Keycloak is a separate deployment
+task and is not reproduced in this course.
 
 **WebAuthn is not yet first-class in Samba AD.** Samba AD's password
 policy supports the modern NIST guidance, length-based requirements,
@@ -789,12 +426,8 @@ The investment in getting it right pays back the more applications the
 organisation adds, because each one consumes the substrate rather than
 reproducing it.
 
-The final architectural fact is the one this chapter began with. The
-identity layer is the substrate. Every commitment the rest of the
-course has made, the network's authenticated mesh, the host's verified
-boot, the application's enforced authorisation, the cryptography
-chapter's keys-bound-to-principals, terminates in the identity layer's
-answer to "who is this?" An organisation that has built a credible
-identity layer has the foundation under all of those commitments. An
-organisation that has not has the commitments without the foundation,
-and the commitments cannot hold up what they were not designed to hold.
+These gaps are real and should be planned against. The pattern is also
+extensible: the same DC, with the same group structure, is the source
+of truth that mail, the wiki, chat, version control and every other
+application federate against. Each application that consumes the
+substrate rather than reproducing it repays the investment.
